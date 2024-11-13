@@ -1,0 +1,72 @@
+Chrome on device repo:
+https://github.com/seftimie/bits-de-IA-gemini-nano-chrome-demo
+
+Project Page:
+https://devpost.com/submit-to/22272-google-chrome-built-in-ai-challenge/manage/submissions
+
+
+Criterios:
+
+- Functionality: How scalable is the application? How well are the APIs used within the project? Can it be used in other regions, or can it be used by more than one type of audience?
+- Purpose: Are you solving an existing problem? Is it an application that would encourage a user to use it more than once for its benefits?
+- Content: How creative is the application? What’s the visual quality like?
+- User Experience: How well executed is the application? Is it easy to use and understand?
+- Technical Execution: How well are you showcasing 1 or more of the APIs powered by AI models built into Google Chrome?
+
+
+
+Idea:
+
+
+A. Functionality:
+
+	1. Escalabilidad: 
+		- múltiples cuentas y tipos de redes sociales;
+		- considera un sistema modular para incluir futuras integraciones de otras plataformas sociales;
+		- actions: like / hearts en comentarios positivos y neutrals;
+		- guardar todo lo que procesamos y las actione en un backend?;
+		- pintamos un dashboard a nivel branding con toda la actividad?;
+		- via la extension tener la posibilidad de cargar un listado de urls a monitorizar;
+		- acceso a Reportes de Actividad (export as csv/pdf);
+
+	2. Uso de APIs:
+		- probamos con LLMs on device de Chrome;
+		- si lo de Chrome no va bien, utilizamos gemini via vertex;
+		- y para el hackthon igual un mix?;
+
+	3. Adaptabilidad Regional y Diversidad de Audiencia:
+		- el análisis de comentarios en varios idiomas;
+		- optimiza el sistema para diferentes segmentos de audiencia / brands;
+
+
+B. Purpose: eficiencia en la gestión de redes sociales, permitiendo a los community managers analizar grandes volúmenes de comentarios de forma rápida y automatizar respuestas básicas, lo cual mejora el tiempo de respuesta y reduce la carga manual;
+   Con el tiempo, el sistema podría aprender patrones de los comentarios o preferencias del usuario para hacer recomendaciones de respuesta o para ajustar automáticamente el nivel de sensibilidad en la detección de sentimientos;
+
+C. Content: 
+	- Implementa gráficos y visualizaciones de datos en tiempo real para mostrar el análisis de sentimiento, tendencias de engagement y métricas clave de interacción;
+	- Incluye un tablero que permita configurar el nivel de sensibilidad del análisis y las reglas de automatización para cada cuenta, añadiendo flexibilidad;
+	- Permite a los usuarios filtrar por períodos específicos, tipo de sentimiento, red social, o palabras clave para que el análisis sea más profund;
+	- Métricas: Incluye gráficos sobre la evolución de las métricas clave (por ejemplo, engagement, porcentaje de respuestas automáticas vs manuales) para que los usuarios tengan una visión clara de cómo la herramienta les está ayudando a mejorar la gestión de redes.
+	- Diseña una interfaz moderna e intuitiva, con un estilo visual minimalista, pero profesional;
+	- Usa iconos claros y etiquetas de fácil comprensión para las funciones (ej. análisis, métricas, automatización);
+	- Integra elementos visuales de las redes sociales (logos, colores) para que los usuarios asocien rápidamente cada sección con la plataforma correspondiente;
+
+D. User Experience:
+	- proceso de configuración inicial;
+	- agrega una opción de “deshacer” para cada acción automatizada (likes, respuestas) para permitir correcciones rápidas;
+	- add: documentación y soporte 
+		* Incluye una guía interactiva o una sección de preguntas frecuentes para ayudar a los usuarios nuevos a familiarizarse rápidamente con la herramienta;
+		* Proporciona un botón de “Feedback” para que los usuarios puedan enviar comentarios y sugerencias, lo cual facilita la mejora continua de la extensión;
+
+E. Technical Execution:
+- Google Chrome on device LLMs;
+- Implementa un sistema de “batch processing” para analizar comentarios de manera eficiente y evitar latencias;
+- Integra capacidades de análisis avanzado, como la detección de temas recurrentes o insights de audiencia, usando los modelos de LLM en Chrome para crear resúmenes automáticos de tendencias;
+- Desarrolla un sistema de reglas configurables que permite a los usuarios definir criterios específicos para las respuestas automáticas, los likes y otras interacciones, todo en función de los análisis de sentimiento;
+- Incluye funciones de control para evitar que se realicen demasiadas acciones automatizadas, previniendo posibles bloqueos de cuenta en redes sociales;
+- Almacena preferencias de usuario (ej. reglas de análisis y respuestas automatizadas) de forma local, respetando la privacidad y facilitando el acceso inmediato a los datos sin la necesidad de registros externos;
+
+
+
+
+
