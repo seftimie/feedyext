@@ -4,3 +4,20 @@
 # https://developer.chrome.com/docs/extensions/ai/prompt-api#:~:text=Open%20Chrome%20on%20one%20of,Gemini%20Nano%20onto%20your%20device.
 
 
+
+si lo quieres probar: last google canary
+
+enable this:
+
+chrome://flags/:
+enabled:
+- Prompt API for Gemini Nano
+- Summarization API for Gemini Nano
+- Writer API for Gemini Nano
+- Rewriter API for Gemini Nano
+
+
+- Enables optimization guide on device: enabled bypassPerfRequirment !!!!!!
+
+and repo here:
+https://github.com/seftimie/google-LLMsDevice-Hackathon
