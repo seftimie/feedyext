@@ -1,0 +1,6 @@
+
+# https://github.com/explainers-by-googlers/prompt-api/
+# https://github.com/explainers-by-googlers/prompt-api/?tab=readme-ov-file
+# https://developer.chrome.com/docs/extensions/ai/prompt-api#:~:text=Open%20Chrome%20on%20one%20of,Gemini%20Nano%20onto%20your%20device.
+
+

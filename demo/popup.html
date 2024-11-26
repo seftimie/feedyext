@@ -1,12 +1,47 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Web Monitor</title>
+  <title>HTML Grabber</title>
+  <style>
+    body {
+      width: 400px;
+      padding: 10px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+    #actionButton {
+      background-color: #2196F3;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
+    #commentsContainer {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    p {
+      border-bottom: 1px solid #eee;
+      padding: 10px;
+      margin: 5px 0;
+      background-color: #f9f9f9;
+    }
+    p strong {
+      color: #333;
+    }
+  </style>
 </head>
 <body>
-  <h3>Ingrese la URL a monitorear</h3>
-  <input type="text" id="url" placeholder="https://example.com">
-  <button id="start">Iniciar monitoreo</button>
+  <button id="getContent">Get Content</button>
+  <button id="actionButton">Action</button>
+  <div id="commentsContainer"></div>
   <script src="popup.js"></script>
 </body>
 </html>

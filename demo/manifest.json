@@ -1,28 +1,22 @@
 {
-    "manifest_version": 3,
-    "name": "Web Monitor",
-    "version": "1.0",
-    "description": "Monitorea una URL cada 10 minutos y envía el contenido a un backend.",
-    "permissions": [
-      "alarms",
-      "tabs",
-      "activeTab",
-      "storage"
-    ],
-    "background": {
-      "service_worker": "background.js"
-    },
-    "action": {
-      "default_popup": "popup.html"
-    },
-    "host_permissions": [
-      "<all_urls>"
-    ],
-    "content_scripts": [
-      {
-        "matches": ["<all_urls>"],
-        "js": ["content.js"]
-      }
-    ]
+  "manifest_version": 3,
+  "name": "HTML Content Grabber",
+  "version": "1.0",
+  "description": "Captura el HTML de la pestaña activa",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "tabs",
+    "ai"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
   }
-  
+}
