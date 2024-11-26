@@ -17,9 +17,6 @@ COPY . .
 EXPOSE 8080
 
 # Definir variables de entorno necesarias
-ENV BIGQUERY_PROJECT_ID=your-project-id
-ENV BIGQUERY_DATASET_ID=your-dataset-id
-ENV BIGQUERY_TABLE_ID=your-table-id
 ENV PORT=8080
 
 # Comando para ejecutar la aplicación

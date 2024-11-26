@@ -31,8 +31,7 @@ app.post('/ingest', async (req, res) => {
         };
 
         // Configurar los parámetros de BigQuery
-        const project = bigquery.dataset(process.env.BIGQUERY_PROJECT_ID);
-        const dataset = project.dataset(process.env.BIGQUERY_DATASET_ID);
+        const dataset = bigquery.dataset(process.env.BIGQUERY_DATASET_ID);
         const table = dataset.table(process.env.BIGQUERY_TABLE_ID);
 
         // Insertar los datos en BigQuery
