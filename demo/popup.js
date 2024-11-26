@@ -251,6 +251,91 @@ document.getElementById('getContent').addEventListener('click', async () => {
         console.error('Error en el análisis paralelo:', error);
       }
 
+      // Añadir función para procesar texto y crear nube de palabras
+      function createWordCloud(comments) {
+        // Lista de palabras a excluir
+        const stopWords = new Set(['de', 'la', 'que', 'el', 'en', 'y', 'a', 'los', 'del', 'las', 'un', 'por', 'con', 'una', 'su', 'para', 'es', 'al', 'lo', 'como', 'más', 'o', 'pero', 'sus', 'le', 'ha', 'me', 'si', 'sin', 'sobre', 'este', 'ya', 'entre', 'cuando', 'todo', 'esta', 'ser', 'son', 'dos', 'también', 'fue', 'había', 'era', 'muy', 'años', 'hasta', 'desde', 'está', 'mi', 'porque', 'qué', 'sólo', 'han', 'yo', 'hay', 'vez', 'puede', 'todos', 'así', 'nos', 'ni', 'parte', 'tiene', 'él', 'uno', 'donde', 'bien', 'tiempo', 'mismo', 'ese', 'ahora', 'cada', 'e', 'vida', 'otro', 'después', 'te', 'otros', 'aunque', 'esa', 'eso', 'hace', 'otra', 'gobierno', 'tan', 'durante', 'siempre', 'día', 'tanto', 'ella', 'tres', 'sí', 'dijo', 'sido', 'gran', 'país', 'según', 'menos', 'mundo', 'año', 'antes', 'estado', 'contra', 'sino', 'forma', 'caso', 'nada', 'hacer', 'general', 'estaba', 'poco', 'estos', 'presidente', 'mayor', 'ante', 'unos', 'les', 'algo', 'hacia', 'casa', 'ellos', 'ayer', 'quien', 'the', 'and', 'to', 'a', 'of', 'in', 'is', 'it', 'you', 'that', 'he', 'was', 'for', 'on', 'are', 'with', 'as', 'his', 'they', 'at', 'be', 'this', 'have', 'from', 'or', 'one', 'had', 'by', 'word', 'but', 'not', 'what', 'all', 'were', 'we', 'when', 'your', 'can', 'said', 'there', 'use', 'an', 'each', 'which', 'she', 'do', 'how', 'their', 'if', 'will', 'up', 'other', 'about', 'out', 'many', 'then', 'them', 'these', 'so', 'some', 'her', 'would', 'make', 'like', 'him', 'into', 'time', 'has', 'look', 'two', 'more', 'write', 'go', 'see', 'number', 'no', 'way', 'could', 'people', 'my', 'than', 'first', 'water', 'been', 'call', 'who', 'oil', 'its', 'now', 'find', 'long', 'down', 'day', 'did', 'get', 'come', 'made', 'may', 'part']);
+
+        // Procesar todos los comentarios y contar palabras
+        const wordCount = {};
+        comments.forEach(comment => {
+          const words = comment.text.toLowerCase()
+            .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, '')
+            .split(/\s+/);
+          
+          words.forEach(word => {
+            if (word.length > 3 && !stopWords.has(word)) {
+              wordCount[word] = (wordCount[word] || 0) + 1;
+            }
+          });
+        });
+
+        // Convertir a array y ordenar por frecuencia
+        const sortedWords = Object.entries(wordCount)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 50); // Tomar las 50 palabras más frecuentes
+
+        // Obtener el contenedor
+        const cloudContainer = document.getElementById('wordCloud');
+        cloudContainer.innerHTML = ''; // Limpiar contenedor
+
+        // Crear elementos para cada palabra
+        sortedWords.forEach(([word, count]) => {
+          const wordElement = document.createElement('span');
+          wordElement.textContent = word;
+          wordElement.className = 'word-cloud-word';
+          
+          // Calcular tamaño basado en la frecuencia
+          const fontSize = Math.max(12, Math.min(36, 12 + count * 2));
+          const opacity = Math.max(0.5, Math.min(1, count / sortedWords[0][1]));
+          
+          wordElement.style.cssText = `
+            font-size: ${fontSize}px;
+            opacity: ${opacity};
+            margin: 5px;
+            padding: 5px;
+            display: inline-block;
+            color: ${getRandomColor()};
+            cursor: pointer;
+            transition: transform 0.2s;
+          `;
+
+          wordElement.addEventListener('mouseover', () => {
+            wordElement.style.transform = 'scale(1.2)';
+          });
+
+          wordElement.addEventListener('mouseout', () => {
+            wordElement.style.transform = 'scale(1)';
+          });
+
+          wordElement.addEventListener('click', () => {
+            alert(`"${word}" appears ${count} times`);
+          });
+
+          cloudContainer.appendChild(wordElement);
+        });
+      }
+
+      // Función auxiliar para generar colores aleatorios
+      function getRandomColor() {
+        const colors = [
+          '#2196F3', // Azul
+          '#4CAF50', // Verde
+          '#F44336', // Rojo
+          '#FFC107', // Amarillo
+          '#9C27B0', // Púrpura
+          '#FF9800', // Naranja
+          '#00BCD4', // Cyan
+          '#E91E63', // Rosa
+          '#3F51B5', // Índigo
+          '#009688'  // Teal
+        ];
+        return colors[Math.floor(Math.random() * colors.length)];
+      }
+
+      // Crear la nube de palabras después de procesar todos los comentarios
+      createWordCloud(comments);
+
     } else {
       console.log('No se encontró contenido de comentarios');
     }

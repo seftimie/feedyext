@@ -3,29 +3,73 @@
 <head>
   <title>LinkedIn Comments Analyzer</title>
   <script src="chart.js"></script>
+  <script src="d3.min.js"></script>
+  <script src="d3.layout.cloud.js"></script>
   <style>
     body {
-      width: 800px;
+      width: 1000px;
       padding: 20px;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f6f8;
+    }
+    .main-container {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 20px;
+    }
+    .left-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .word-cloud-container {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      height: auto;
+      min-height: 200px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .word-cloud-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 15px;
+    }
+    #wordCloud {
+      width: 100%;
+      padding: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+    }
+    .word-cloud-word {
+      transition: all 0.3s ease;
+      user-select: none;
+    }
+    .word-cloud-word:hover {
+      transform: scale(1.2);
+      z-index: 1;
     }
     .dashboard {
       display: grid;
-      grid-template-columns: 1fr 300px;
+      grid-template-columns: 1fr;
       gap: 20px;
-      margin-top: 20px;
     }
     .metrics-panel {
-      background: #f8f9fa;
-      padding: 15px;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    .chart-container {
       background: white;
-      padding: 15px;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .buttons-container {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
     }
     .sentiment-summary {
       display: grid;
@@ -99,14 +143,15 @@
     }
     .comment-card {
       background: white;
-      padding: 15px;
+      padding: 20px;
       margin: 10px 0;
-      border-radius: 6px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      transition: transform 0.2s;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
     }
     .comment-card:hover {
       transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
     .sentiment-badge {
       display: inline-block;
@@ -133,14 +178,35 @@
       color: #666;
       margin: 10px 0;
     }
+    .word-cloud-word {
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .word-cloud-word:hover {
+      transform: scale(1.1);
+    }
+    .comments-section {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
   </style>
 </head>
 <body>
-  <button id="getContent">Analyze Comments</button>
-  <button id="actionButton">Process Actions</button>
+  <div class="buttons-container">
+    <button id="getContent">Analyze Comments</button>
+    <button id="actionButton">Process Actions</button>
+  </div>
   
-  <div class="dashboard">
-    <div id="commentsContainer"></div>
+  <div class="main-container">
+    <div class="left-panel">
+      <div class="word-cloud-container">
+        <div class="word-cloud-title">Most Common Words in Comments</div>
+        <div id="wordCloud"></div>
+      </div>
+      <div id="commentsContainer" class="comments-section"></div>
+    </div>
     <div class="metrics-panel">
       <div class="sentiment-summary">
         <div class="metric-card positive">

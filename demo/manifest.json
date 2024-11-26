@@ -23,7 +23,7 @@
     "extension_pages": "script-src 'self'; object-src 'self'"
   },
   "web_accessible_resources": [{
-    "resources": ["chart.js"],
+    "resources": ["chart.js", "d3.min.js", "d3.layout.cloud.js"],
     "matches": ["<all_urls>"]
   }]
 }
