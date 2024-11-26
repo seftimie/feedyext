@@ -1,4 +1,61 @@
+let currentTabInfo = null;
+
+function resetAnalysis() {
+  const sentimentStats = {
+    positive: 0,
+    neutral: 0,
+    negative: 0,
+    total: 0
+  };
+
+  ['positive', 'neutral', 'negative'].forEach(type => {
+    const count = document.getElementById(`${type}Count`);
+    const percentage = document.getElementById(`${type}Percentage`);
+    if (count && percentage) {
+      count.textContent = '0';
+      percentage.textContent = '0%';
+    }
+  });
+
+  const commentsContainer = document.getElementById('commentsContainer');
+  if (commentsContainer) {
+    commentsContainer.innerHTML = '';
+  }
+
+  const wordCloud = document.getElementById('wordCloud');
+  if (wordCloud) {
+    wordCloud.innerHTML = '';
+  }
+
+  const progress = document.getElementById('analysisProgress');
+  const statusText = document.getElementById('statusText');
+  if (progress) progress.style.width = '0%';
+  if (statusText) statusText.textContent = 'Ready to analyze';
+}
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === 'resetData') {
+    currentTabInfo = message.tabInfo;
+    resetAnalysis();
+    
+    const statusText = document.getElementById('statusText');
+    if (statusText) {
+      statusText.textContent = `Ready to analyze: ${currentTabInfo.title}`;
+    }
+  }
+});
+
 document.getElementById('getContent').addEventListener('click', async () => {
+  if (!currentTabInfo) {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    currentTabInfo = {
+      url: tab.url,
+      title: tab.title
+    };
+  }
+  
+  resetAnalysis();
+  
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     
@@ -285,20 +342,20 @@ document.getElementById('getContent').addEventListener('click', async () => {
           wordElement.textContent = word;
           wordElement.className = 'word-cloud-word';
           
-          // Calcular tamaño basado en la frecuencia y posición
-          const fontSize = Math.max(14, Math.min(40, 14 + count * 3));
-          const opacity = Math.max(0.7, Math.min(1, (20 - index) / 20));
+          // Reducir la escala del tamaño de fuente
+          const fontSize = Math.max(10, Math.min(16, 10 + count)); // Reducido de (14, 40) a (10, 16)
+          const opacity = Math.max(0.7, Math.min(1, (15 - index) / 15));
           
           wordElement.style.cssText = `
             font-size: ${fontSize}px;
             opacity: ${opacity};
-            margin: 5px;
-            padding: 5px;
+            margin: 3px;
+            padding: 3px;
             display: inline-block;
             color: ${getRandomColor()};
             cursor: pointer;
             transition: transform 0.2s;
-            font-weight: ${index < 5 ? 'bold' : 'normal'};
+            font-weight: ${index < 5 ? '500' : 'normal'};
           `;
 
           wordElement.addEventListener('mouseover', () => {

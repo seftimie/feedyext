@@ -1,155 +1,201 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Content Analysis</title>
+  <title>Social Analytics</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <style>
     :root {
-      --primary-color: #0A84FF;
-      --success-color: #30D158;
-      --warning-color: #FFD60A;
-      --danger-color: #FF453A;
-      --neutral-color: #98989D;
-      --background-color: #F5F5F7;
-      --card-background: #FFFFFF;
+      --google-blue: #4285F4;
+      --google-red: #EA4335;
+      --google-yellow: #FBBC05;
+      --google-green: #34A853;
+      --background-color: #F8F9FA;
+      --surface-color: #FFFFFF;
+      --text-primary: #202124;
+      --text-secondary: #5F6368;
+      --border-radius: 8px;
+      --spacing: 16px;
     }
 
     body {
-      width: 600px;
-      height: 800px;
+      width: 550px;
+      height: 100vh;
       margin: 0;
-      padding: 24px;
-      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+      padding: 0;
+      font-family: 'Google Sans', 'Roboto', sans-serif;
       background-color: var(--background-color);
-      color: #1D1D1F;
-    }
-
-    .container {
+      color: var(--text-primary);
       display: flex;
       flex-direction: column;
-      gap: 24px;
     }
 
     .header {
-      text-align: center;
-      margin-bottom: 16px;
+      background: var(--surface-color);
+      padding: 16px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
 
-    h1 {
-      font-size: 24px;
-      font-weight: 600;
-      margin: 0;
-      color: #1D1D1F;
-    }
-
-    .button-group {
+    .header-content {
       display: flex;
+      flex-direction: column;
       gap: 12px;
-      justify-content: center;
-      margin-bottom: 24px;
     }
 
-    button {
-      padding: 12px 24px;
-      border-radius: 12px;
+    .action-buttons {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    .btn {
       border: none;
-      font-size: 15px;
+      padding: 12px 16px;
+      border-radius: 24px;
+      font-family: 'Google Sans', sans-serif;
+      font-size: 14px;
       font-weight: 500;
       cursor: pointer;
       transition: all 0.2s ease;
-      background: var(--card-background);
-      color: var(--primary-color);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
     }
 
-    button:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-
-    button:active {
-      transform: translateY(0);
-    }
-
-    #getContent {
-      background: var(--primary-color);
+    .btn-primary {
+      background: var(--google-blue);
       color: white;
     }
 
-    .metrics {
-      display: flex;
-      justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 24px;
+    .btn-secondary {
+      background: #E8F0FE;
+      color: var(--google-blue);
+    }
+
+    .metrics-container {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      padding: 16px;
     }
 
     .metric-card {
-      flex: 1;
+      background: var(--surface-color);
+      border-radius: var(--border-radius);
       padding: 16px;
-      background: var(--card-background);
-      border-radius: 16px;
-      text-align: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     }
 
-    .metric-card.positive {
-      border-bottom: 3px solid var(--success-color);
+    .metric-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .metric-card.neutral {
-      border-bottom: 3px solid var(--neutral-color);
-    }
-
-    .metric-card.negative {
-      border-bottom: 3px solid var(--danger-color);
-    }
-
-    .metric-label {
-      font-size: 14px;
-      font-weight: 500;
-      color: #86868B;
-      margin-bottom: 8px;
+    .metric-content {
+      flex: 1;
     }
 
     .metric-value {
-      font-size: 28px;
-      font-weight: 600;
+      font-size: 24px;
+      font-weight: 500;
       margin: 4px 0;
     }
 
-    .metric-percentage {
-      font-size: 14px;
-      color: #86868B;
+    .metric-label {
+      color: var(--text-secondary);
+      font-size: 12px;
     }
 
-    .comments-section {
-      background: var(--card-background);
-      border-radius: 16px;
-      padding: 20px;
-      margin-bottom: 32px;
+    .metric-percentage {
+      font-size: 12px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .progress-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 16px;
+      background-color: #E8F0FE;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background-color: var(--google-blue);
+      transition: width 0.2s ease;
+    }
+
+    .status-text {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .comments-container {
+      padding: 16px;
+      margin-bottom: 10px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-      max-height: 300px;
+      height: 600px;
       overflow-y: auto;
+      background: var(--surface-color);
+      border-radius: var(--border-radius);
     }
 
     .comment-card {
-      padding: 12px;
+      padding: 16px;
       margin-bottom: 12px;
       border-radius: 12px;
       background: var(--background-color);
       transition: all 0.2s ease;
+      border-left: 4px solid transparent;
     }
 
     .comment-card:hover {
       transform: translateY(-2px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
-    .word-cloud-container {
-      background: var(--card-background);
+    .comment-card.positive {
+      border-left-color: var(--google-green);
+    }
+
+    .comment-card.neutral {
+      border-left-color: var(--text-secondary);
+    }
+
+    .comment-card.negative {
+      border-left-color: var(--google-red);
+    }
+
+    .word-cloud {
+      background: var(--surface-color);
       border-radius: 16px;
-      padding: 32px;
-      height: 300px;
+      padding: 24px;
+      height: 150px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-      margin-top: 16px;
+      margin-top: 5px;
+      margin-bottom: 16px;
     }
 
     #wordCloud {
@@ -158,13 +204,14 @@
       flex-wrap: wrap;
       justify-content: center;
       align-items: center;
-      gap: 12px;
-      padding: 16px;
+      gap: 8px;
+      padding: 12px;
     }
 
     .word-cloud-word {
       transition: all 0.2s ease;
-      margin: 8px;
+      margin: 4px;
+      font-size: 12px;
     }
 
     .word-cloud-word:hover {
@@ -181,57 +228,85 @@
 
     .sentiment-badge.positive {
       background: #E4F8EB;
-      color: var(--success-color);
+      color: var(--google-green);
     }
 
     .sentiment-badge.neutral {
       background: #F5F5F7;
-      color: var(--neutral-color);
+      color: var(--text-secondary);
     }
 
     .sentiment-badge.negative {
       background: #FFE5E5;
-      color: var(--danger-color);
+      color: var(--google-red);
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <header class="header">
-      <h1>Content Analysis</h1>
-    </header>
-
-    <div class="button-group">
-      <button id="getContent">Analyze</button>
-      <button id="actionButton">Actions</button>
+  <div class="header">
+    <div class="header-content">
+      <div class="action-buttons">
+        <button id="getContent" class="btn btn-primary">
+          <span class="material-icons">analytics</span>
+          Analyze
+        </button>
+       
+        <button id="actionButton" class="btn btn-secondary">
+          <span class="material-icons">auto_awesome</span>
+          Actions
+        </button>
+      </div>
     </div>
+  </div>
 
-    <div class="metrics">
-      <div class="metric-card positive">
+  <div class="progress-container">
+    <div class="progress-bar">
+      <div id="analysisProgress" class="progress-fill" style="width: 0%"></div>
+    </div>
+    <div id="statusText" class="status-text">Ready to analyze</div>
+  </div>
+
+  <div class="metrics-container" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+    <div class="metric-card positive">
+      <div class="metric-icon" style="background: #E6F4EA">
+        <span class="material-icons" style="color: var(--google-green)">sentiment_very_satisfied</span>
+      </div>
+      <div class="metric-content">
         <div class="metric-label">Positive</div>
-        <div id="positiveCount" class="metric-value">0</div>
+        <div id="positiveCount" class="metric-value positive">0</div>
         <div id="positivePercentage" class="metric-percentage">0%</div>
       </div>
-      <div class="metric-card neutral">
+    </div>
+
+    <div class="metric-card neutral">
+      <div class="metric-icon" style="background: #F1F3F4">
+        <span class="material-icons" style="color: var(--text-secondary)">sentiment_neutral</span>
+      </div>
+      <div class="metric-content">
         <div class="metric-label">Neutral</div>
-        <div id="neutralCount" class="metric-value">0</div>
+        <div id="neutralCount" class="metric-value neutral">0</div>
         <div id="neutralPercentage" class="metric-percentage">0%</div>
       </div>
-      <div class="metric-card negative">
+    </div>
+
+    <div class="metric-card negative">
+      <div class="metric-icon" style="background: #FCE8E6">
+        <span class="material-icons" style="color: var(--google-red)">sentiment_very_dissatisfied</span>
+      </div>
+      <div class="metric-content">
         <div class="metric-label">Negative</div>
-        <div id="negativeCount" class="metric-value">0</div>
+        <div id="negativeCount" class="metric-value negative">0</div>
         <div id="negativePercentage" class="metric-percentage">0%</div>
       </div>
     </div>
-
-    <div class="comments-section" id="commentsContainer">
-      <!-- Comments will be inserted here -->
-    </div>
-
-    <div class="word-cloud-container">
-      <div id="wordCloud"></div>
-    </div>
   </div>
+
+  <div class="comments-container" id="commentsContainer"></div>
+
+  <div class="word-cloud">
+    <div id="wordCloud"></div>
+  </div>
+
   <script src="popup.js"></script>
 </body>
 </html>

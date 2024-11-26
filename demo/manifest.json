@@ -1,16 +1,23 @@
 {
   "manifest_version": 3,
-  "name": "HTML Content Grabber",
+  "name": "Social Analytics",
   "version": "1.0",
-  "description": "Captura el HTML de la pestaña activa",
+  "description": "Advanced social media comment analysis with sentiment detection",
   "permissions": [
     "activeTab",
     "scripting",
     "tabs",
-    "ai"
+    "ai",
+    "sidePanel"
   ],
   "action": {
-    "default_popup": "popup.html"
+    "default_icon": "icons/icon.svg"
+  },
+  "side_panel": {
+    "default_path": "popup.html"
+  },
+  "icons": {
+    "128": "icons/icon.svg"
   },
   "host_permissions": [
     "<all_urls>"
@@ -23,7 +30,11 @@
     "extension_pages": "script-src 'self'; object-src 'self'"
   },
   "web_accessible_resources": [{
-    "resources": ["chart.js", "d3.min.js", "d3.layout.cloud.js"],
+    "resources": [
+      "chart.js",
+      "fonts/*",
+      "icons/*"
+    ],
     "matches": ["<all_urls>"]
   }]
 }
