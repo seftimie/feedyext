@@ -1,0 +1,36 @@
+#deploy ingest in cloud run
+==========================================================
+
+gcloud auth login
+
+gcloud config set project thematic-fort-388019
+export GOOGLE_CLOUD_PROJECT=thematic-fort-388019
+==========================================================
+
+gcloud builds submit --tag gcr.io/$GOOGLE_CLOUD_PROJECT/feedy
+
+gcloud run deploy feedy \
+  --image gcr.io/$GOOGLE_CLOUD_PROJECT/feedy \
+  --platform managed \
+  --region europe-west4 \
+  --allow-unauthenticated
+
+export BIGQUERY_PROJECT_ID=thematic-fort-388019
+export BIGQUERY_DATASET_ID=feedy
+export BIGQUERY_TABLE_ID=raw
+
+
+#test ingest in cloud run
+==========================================================
+curl --location 'https://feedy-195788712267.europe-west4.run.app/ingest' \
+--header 'Content-Type: application/json' \
+--data '{
+	"company":"IPG",
+	"url":"https://kinesso.com",
+	"plataforma":"linkedin",
+	"comments": [
+		{"texto":"comment here 1","label":"positive"},
+		{"texto":"comment here 2","label":"neutral"},
+		{"texto":"comment here 3","label":"negative"}
+	]
+}'

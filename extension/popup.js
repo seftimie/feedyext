@@ -73,7 +73,7 @@ document.getElementById('getContent').addEventListener('click', async () => {
 
           // Crear una sesión con la configuración correcta
           const baseSession = await ai.languageModel.create({
-            model: "gemini-pro",
+            // model: "gemini-pro",
             systemPrompt: "You are a sentiment classifier. Your task is to classify text sentiment. You must respond with exactly one word: 'positive', 'negative', or 'neutral'. No other output is allowed.",
             // Configuración de generación
             generationConfig: {
