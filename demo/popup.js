@@ -111,86 +111,146 @@ document.getElementById('getContent').addEventListener('click', async () => {
       const comments = results[0].result;
       console.log('Comentarios encontrados:', comments);
       
-      const commentsDiv = document.createElement('div');
-      commentsDiv.id = 'commentsContainer';
-      commentsDiv.innerHTML = `<p>Encontrados ${comments.length} comentarios. Analizando sentimientos...</p>`;
-      document.body.appendChild(commentsDiv);
+      // Inicializar contadores
+      let sentimentStats = {
+        positive: 0,
+        neutral: 0,
+        negative: 0,
+        total: 0
+      };
+
+      function updateMetrics(sentiment) {
+        sentimentStats[sentiment]++;
+        sentimentStats.total++;
+
+        // Actualizar contadores
+        ['positive', 'neutral', 'negative'].forEach(type => {
+          const count = document.getElementById(`${type}Count`);
+          const percentage = document.getElementById(`${type}Percentage`);
+          if (count && percentage) {
+            count.textContent = sentimentStats[type];
+            percentage.textContent = `${Math.round((sentimentStats[type] / sentimentStats.total) * 100)}%`;
+          }
+        });
+      }
+
+      function updateProgressBar(current, total) {
+        const progress = document.getElementById('analysisProgress');
+        const statusText = document.getElementById('statusText');
+        if (progress && statusText) {
+          const percentage = (current / total) * 100;
+          progress.style.width = `${percentage}%`;
+          statusText.textContent = `Analyzing: ${current}/${total} comments`;
+        }
+      }
 
       function updateCommentUI(index, comment, sentiment) {
         const commentId = `comment-${index}`;
         let commentElement = document.getElementById(commentId);
         
         if (!commentElement) {
-          commentElement = document.createElement('p');
+          commentElement = document.createElement('div');
           commentElement.id = commentId;
-          commentsDiv.appendChild(commentElement);
+          commentElement.className = 'comment-card';
+          document.getElementById('commentsContainer').appendChild(commentElement);
         }
 
         commentElement.innerHTML = `
-          <strong>Comentario ${index + 1}:</strong> ${comment.text}<br>
-          ${sentiment ? `<strong>Sentimiento:</strong> ${sentiment}` : '<em>Analizando sentimiento...</em>'}
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <strong>Comment ${index + 1}</strong>
+            ${sentiment ? 
+              `<span class="sentiment-badge ${sentiment}">${sentiment}</span>` : 
+              '<span class="sentiment-badge neutral">analyzing...</span>'}
+          </div>
+          <p style="margin: 10px 0;">${comment.text}</p>
         `;
 
         if (sentiment) {
-          switch(sentiment) {
-            case 'positive':
-              commentElement.style.borderLeft = '4px solid green';
-              break;
-            case 'negative':
-              commentElement.style.borderLeft = '4px solid red';
-              break;
-            case 'neutral':
-              commentElement.style.borderLeft = '4px solid gray';
-              break;
-          }
+          updateMetrics(sentiment);
         }
       }
 
+      // Crear contenedor de comentarios
+      const commentsDiv = document.createElement('div');
+      commentsDiv.id = 'commentsContainer';
+      commentsDiv.innerHTML = `<p>Encontrados ${comments.length} comentarios. Analizando sentimientos...</p>`;
+      document.body.appendChild(commentsDiv);
+
+      // Analizar comentarios en paralelo con un límite de concurrencia
+      async function analyzeInParallel(comments, concurrencyLimit = 5) {
+        const results = new Array(comments.length);
+        let currentIndex = 0;
+
+        async function processComment() {
+          while (currentIndex < comments.length) {
+            const index = currentIndex++;
+            const comment = comments[index];
+            
+            try {
+              console.log(`Analizando comentario ${index + 1}/${comments.length}`);
+              updateProgressBar(index + 1, comments.length);
+
+              const sentiment = await chrome.scripting.executeScript({
+                target: { tabId: tab.id },
+                function: async (commentText) => {
+                  const baseSession = await ai.languageModel.create({
+                    model: "gemini-pro",
+                    systemPrompt: "You are a sentiment classifier. Your task is to classify text sentiment. You must respond with exactly one word: 'positive', 'negative', or 'neutral'. No other output is allowed.",
+                    generationConfig: {
+                      temperature: 0.1,
+                      topK: 1,
+                      maxOutputTokens: 1
+                    }
+                  });
+
+                  const result = await baseSession.prompt(commentText);
+                  baseSession.destroy();
+                  return result.trim().toLowerCase();
+                },
+                args: [comment.text]
+              });
+
+              if (sentiment && sentiment[0].result) {
+                results[index] = sentiment[0].result;
+                comments[index].sentiment = sentiment[0].result;
+                updateCommentUI(index, comment, sentiment[0].result);
+              } else {
+                results[index] = 'neutral';
+                updateCommentUI(index, comment, 'neutral');
+              }
+            } catch (error) {
+              console.error(`Error analizando comentario ${index + 1}:`, error);
+              results[index] = 'neutral';
+              updateCommentUI(index, comment, 'neutral');
+            }
+          }
+        }
+
+        // Crear array de promesas para procesar en paralelo
+        const workers = Array(concurrencyLimit).fill(null).map(processComment);
+        await Promise.all(workers);
+
+        return results;
+      }
+
+      // Mostrar comentarios inicialmente
       comments.forEach((comment, index) => {
         updateCommentUI(index, comment, null);
       });
 
-      // Analizar comentarios uno por uno
-      for (let i = 0; i < comments.length; i++) {
-        const comment = comments[i];
-        console.log(`Analizando comentario ${i + 1}/${comments.length}`);
+      // Analizar comentarios en paralelo
+      try {
+        await analyzeInParallel(comments);
         
-        try {
-          const sentiment = await chrome.scripting.executeScript({
-            target: { tabId: tab.id },
-            function: async (commentText) => {
-              const baseSession = await ai.languageModel.create({
-                model: "gemini-pro",
-                systemPrompt: "You are a sentiment classifier. Your task is to classify text sentiment. You must respond with exactly one word: 'positive', 'negative', or 'neutral'. No other output is allowed.",
-                generationConfig: {
-                  temperature: 0.1,
-                  topK: 1,
-                  maxOutputTokens: 1
-                }
-              });
-
-              const result = await baseSession.prompt(commentText);
-              baseSession.destroy();
-              return result.trim().toLowerCase();
-            },
-            args: [comment.text]
-          });
-
-          if (sentiment && sentiment[0].result) {
-            comments[i].sentiment = sentiment[0].result;
-            updateCommentUI(i, comment, sentiment[0].result);
-          } else {
-            updateCommentUI(i, comment, 'neutral');
-          }
-        } catch (error) {
-          console.error(`Error analizando comentario ${i + 1}:`, error);
-          updateCommentUI(i, comment, 'neutral');
-        }
-
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Actualizar estado final
+        const statusText = document.getElementById('statusText');
+        const progress = document.getElementById('analysisProgress');
+        if (statusText) statusText.textContent = 'Analysis Complete';
+        if (progress) progress.style.width = '100%';
+      } catch (error) {
+        console.error('Error en el análisis paralelo:', error);
       }
 
-      commentsDiv.firstChild.textContent = `Análisis completado: ${comments.length} comentarios procesados`;
     } else {
       console.log('No se encontró contenido de comentarios');
     }
