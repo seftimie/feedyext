@@ -125,7 +125,7 @@
       background: var(--card-background);
       border-radius: 16px;
       padding: 20px;
-      margin-bottom: 24px;
+      margin-bottom: 32px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.05);
       max-height: 300px;
       overflow-y: auto;
@@ -146,13 +146,25 @@
     .word-cloud-container {
       background: var(--card-background);
       border-radius: 16px;
-      padding: 20px;
-      height: 200px;
+      padding: 32px;
+      height: 300px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      margin-top: 16px;
+    }
+
+    #wordCloud {
+      height: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
     }
 
     .word-cloud-word {
       transition: all 0.2s ease;
+      margin: 8px;
     }
 
     .word-cloud-word:hover {
