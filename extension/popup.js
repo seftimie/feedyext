@@ -304,6 +304,38 @@ document.getElementById('getContent').addEventListener('click', async () => {
         const progress = document.getElementById('analysisProgress');
         if (statusText) statusText.textContent = 'Analysis Complete';
         if (progress) progress.style.width = '100%';
+
+        // Preparar y enviar datos al endpoint
+        const commentData = {
+          company: currentTabInfo.title.split('|')[0].trim(), // Assuming company name is before the | in the title
+          url: currentTabInfo.url,
+          plataforma: "linkedin",
+          comments: comments.map(comment => ({
+            texto: comment.text,
+            label: comment.sentiment
+          }))
+        };
+
+        try {
+          const response = await fetch('https://feedy-195788712267.europe-west4.run.app/ingest', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(commentData)
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          console.log('Data successfully sent to endpoint');
+          if (statusText) statusText.textContent = 'Analysis Complete - Data Sent';
+        } catch (error) {
+          console.error('Error sending data to endpoint:', error);
+          if (statusText) statusText.textContent = 'Analysis Complete - Error Sending Data';
+        }
+
       } catch (error) {
         console.error('Error en el análisis paralelo:', error);
       }
