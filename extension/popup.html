@@ -240,6 +240,55 @@
       background: #FFE5E5;
       color: var(--google-red);
     }
+
+    .filter-buttons {
+      margin: 15px 0;
+      text-align: center;
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .filter-btn {
+      margin: 0 4px;
+      padding: 8px 16px;
+      border: 1px solid #e0e0e0;
+      border-radius: 20px;
+      background: white;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      color: #5f6368;
+    }
+
+    .filter-btn:hover {
+      background: #f1f3f4;
+      border-color: #dadce0;
+    }
+
+    .filter-btn.active {
+      background: #1a73e8;
+      color: white;
+      border-color: #1a73e8;
+    }
+
+    .filter-btn.active:hover {
+      background: #1557b0;
+    }
+
+    .comment-item {
+      margin: 10px 0;
+      padding: 12px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      background: white;
+      transition: all 0.2s ease;
+    }
+
+    .comment-item:hover {
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
   </style>
 </head>
 <body>
@@ -299,6 +348,17 @@
         <div id="negativePercentage" class="metric-percentage">0%</div>
       </div>
     </div>
+  </div>
+
+  <div class="sentiment-summary">
+    <!-- Existentes contadores de sentimiento... -->
+  </div>
+
+  <div class="filter-buttons">
+    <button id="filter-all" class="filter-btn active">All</button>
+    <button id="filter-positive" class="filter-btn">Positive</button>
+    <button id="filter-neutral" class="filter-btn">Neutral</button>
+    <button id="filter-negative" class="filter-btn">Negative</button>
   </div>
 
   <div class="comments-container" id="commentsContainer"></div>

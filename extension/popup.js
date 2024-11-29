@@ -1,4 +1,5 @@
 let currentTabInfo = null;
+let currentFilter = 'all';
 
 function resetAnalysis() {
   const sentimentStats = {
@@ -212,11 +213,16 @@ document.getElementById('getContent').addEventListener('click', async () => {
           document.getElementById('commentsContainer').appendChild(commentElement);
         }
 
+        // Set the data-sentiment attribute
+        const sentimentValue = sentiment ? sentiment.toLowerCase() : 'neutral';
+        commentElement.setAttribute('data-sentiment', sentimentValue);
+        commentElement.className = `comment-card ${sentimentValue}`;
+
         commentElement.innerHTML = `
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <strong>Comment ${index + 1}</strong>
             ${sentiment ? 
-              `<span class="sentiment-badge ${sentiment}">${sentiment}</span>` : 
+              `<span class="sentiment-badge ${sentimentValue}">${sentiment}</span>` : 
               '<span class="sentiment-badge neutral">analyzing...</span>'}
           </div>
           <p style="margin: 10px 0;">${comment.text}</p>
@@ -224,6 +230,12 @@ document.getElementById('getContent').addEventListener('click', async () => {
 
         if (sentiment) {
           updateMetrics(sentiment);
+          // Apply current filter
+          if (currentFilter !== 'all' && currentFilter !== sentimentValue) {
+            commentElement.style.display = 'none';
+          } else {
+            commentElement.style.display = 'block';
+          }
         }
       }
 
@@ -482,3 +494,54 @@ document.getElementById('actionButton').addEventListener('click', async () => {
     console.error('Error al ejecutar el script de acción:', err);
   }
 });
+
+function filterComments(sentiment) {
+  currentFilter = sentiment.toLowerCase();
+  console.log('Filtering comments by:', currentFilter); // Debug log
+
+  const comments = document.querySelectorAll('.comment-card');
+  console.log('Found comments:', comments.length); // Debug log
+
+  comments.forEach(comment => {
+    const commentSentiment = comment.getAttribute('data-sentiment');
+    console.log('Comment sentiment:', commentSentiment); // Debug log
+
+    if (currentFilter === 'all') {
+      comment.style.display = 'block';
+    } else {
+      comment.style.display = commentSentiment === currentFilter ? 'block' : 'none';
+    }
+  });
+
+  // Update active button state
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  document.querySelector(`#filter-${currentFilter}`).classList.add('active');
+}
+
+// Add event listeners for filter buttons
+document.addEventListener('DOMContentLoaded', () => {
+  const filterButtons = {
+    'all': document.getElementById('filter-all'),
+    'positive': document.getElementById('filter-positive'),
+    'neutral': document.getElementById('filter-neutral'),
+    'negative': document.getElementById('filter-negative')
+  };
+
+  Object.entries(filterButtons).forEach(([sentiment, button]) => {
+    if (button) {
+      button.addEventListener('click', () => {
+        console.log('Filter button clicked:', sentiment); // Debug log
+        filterComments(sentiment);
+      });
+    }
+  });
+});
+
+function addCommentToUI(comment) {
+    const commentElement = document.createElement('div');
+    commentElement.className = 'comment-item';
+    commentElement.setAttribute('data-sentiment', comment.sentiment.toLowerCase());
+    // Resto del código existente para crear el elemento del comentario...
+}
