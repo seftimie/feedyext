@@ -250,13 +250,45 @@ document.getElementById('getContent').addEventListener('click', async () => {
         const results = new Array(comments.length);
         let currentIndex = 0;
 
+        // First check if AI Language Model is available
+        let useCloud = false;
+        try {
+          const modelCheck = await chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            function: async () => {
+              if (!self.ai || !self.ai.languageModel) {
+                return false;
+              }
+              const capabilities = await ai.languageModel.capabilities();
+              return capabilities.available !== "no";
+            }
+          });
+          useCloud = !modelCheck[0].result;
+        } catch (error) {
+          console.log("Error checking AI capabilities, falling back to cloud:", error);
+          useCloud = true;
+        }
+
+        if (useCloud) {
+          console.log("Using cloud service for sentiment analysis");
+          const cloudResults = await analyzeWithCloud(comments);
+          cloudResults.forEach((sentiment, index) => {
+            results[index] = sentiment;
+            comments[index].sentiment = sentiment;
+            updateCommentUI(index, comments[index], sentiment);
+            updateProgressBar(index + 1, comments.length);
+          });
+          return results;
+        }
+
+        // If AI Language Model is available, use the original local analysis logic
         async function processComment() {
           while (currentIndex < comments.length) {
             const index = currentIndex++;
             const comment = comments[index];
             
             try {
-              console.log(`Analizando comentario ${index + 1}/${comments.length}`);
+              console.log(`Analyzing comment ${index + 1}/${comments.length}`);
               updateProgressBar(index + 1, comments.length);
 
               const sentiment = await chrome.scripting.executeScript({
@@ -288,14 +320,13 @@ document.getElementById('getContent').addEventListener('click', async () => {
                 updateCommentUI(index, comment, 'neutral');
               }
             } catch (error) {
-              console.error(`Error analizando comentario ${index + 1}:`, error);
+              console.error(`Error analyzing comment ${index + 1}:`, error);
               results[index] = 'neutral';
               updateCommentUI(index, comment, 'neutral');
             }
           }
         }
 
-        // Crear array de promesas para procesar en paralelo
         const workers = Array(concurrencyLimit).fill(null).map(processComment);
         await Promise.all(workers);
 
@@ -544,4 +575,28 @@ function addCommentToUI(comment) {
     commentElement.className = 'comment-item';
     commentElement.setAttribute('data-sentiment', comment.sentiment.toLowerCase());
     // Resto del código existente para crear el elemento del comentario...
+}
+
+async function analyzeWithCloud(comments) {
+  try {
+    const response = await fetch('https://feedy-195788712267.europe-west4.run.app/predict', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        comments: comments.map(comment => ({ texto: comment.text }))
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    return result.comments.map(comment => comment.label);
+  } catch (error) {
+    console.error('Error in cloud analysis:', error);
+    return comments.map(() => 'neutral'); // Fallback to neutral for all comments in case of error
+  }
 }
