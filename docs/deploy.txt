@@ -34,3 +34,33 @@ curl --location 'https://feedy-195788712267.europe-west4.run.app/ingest' \
 		{"texto":"comment here 3","label":"negative"}
 	]
 }'
+
+#test predict with vertex ai:
+==========================================================
+curl --location 'https://feedy-195788712267.europe-west4.run.app/predict' \
+--header 'Content-Type: application/json' \
+--data '{
+  "comments": [
+    {"texto":"This is great!"},
+    {"texto":"I feel indifferent."},
+    {"texto":"Terrible experience."}
+  ]
+}'
+
+return:
+{
+    "comments": [
+        {
+            "texto": "This is great!",
+            "label": "positive"
+        },
+        {
+            "texto": "I feel indifferent.",
+            "label": "neutral"
+        },
+        {
+            "texto": "Terrible experience.",
+            "label": "negative"
+        }
+    ]
+}

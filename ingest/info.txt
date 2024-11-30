@@ -1,5 +1,3 @@
-
-
 CLOUD RUN -> BIGQUERY
 ========================
 
@@ -68,5 +66,13 @@ payload eg:
     "mode": "REQUIRED"
   }
 ]
+
+Required environment variables:
+- GCP_PROJECT_ID: Your Google Cloud Project ID
+- GCP_LOCATION: Location of Vertex AI (default: us-central1)
+
+Optional environment variables:
+- VERTEX_MODEL: Model name (default: gemini-1.5-pro)
+- VERTEX_PROMPT: Custom prompt for sentiment analysis
 
 

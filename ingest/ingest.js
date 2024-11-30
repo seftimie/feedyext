@@ -2,6 +2,7 @@ const express = require('express');
 const {BigQuery} = require('@google-cloud/bigquery');
 const dotenv = require('dotenv');
 const cors = require('cors');
+const { VertexAI } = require('@google-cloud/vertexai');
 
 // Cargar variables de entorno
 dotenv.config();
@@ -18,6 +19,45 @@ app.use(express.json());
 
 // Inicializar BigQuery
 const bigquery = new BigQuery();
+
+// Configuración de Vertex AI
+const projectId = process.env.GCP_PROJECT_ID;
+const location = process.env.GCP_LOCATION || 'europe-west4';
+const vertexAI = new VertexAI({ project: projectId, location });
+
+// Configuración del modelo
+const MODEL_NAME = process.env.VERTEX_MODEL || 'gemini-1.5-pro-002';
+const DEFAULT_PROMPT = process.env.PROMPT || `You are a JSON processor that performs sentiment analysis on text within JSON objects.  Your input will be a JSON object with a "comments" array. Each object in the array has a "texto" field containing text. You will analyze the sentiment of the text in each "texto" field and add a corresponding "label" field to the object. The "label" should be one of the following: 'positive', 'neutral', or 'negative'.
+
+**Process:**
+
+1. **Parse** the input JSON.
+2. **Iterate** through the "comments" array.
+3. For each object in the array:
+    * **Analyze** the sentiment of the text in the "texto" field.
+    * **Assign** a "label" field to the object with the appropriate sentiment value ('positive', 'neutral', or 'negative').
+4. **Return** a valid JSON object with the modified "comments" array including the added "label" fields.  Maintain the original structure and content of the input JSON, only adding the "label" fields.
+
+
+**Example Input:**
+
+{
+  "comments": [
+    {"texto":"This is great!"},
+    {"texto":"I feel indifferent."},
+    {"texto":"Terrible experience."}
+  ]
+}
+
+**Example Output:**
+
+{
+  "comments": [
+    {"texto":"This is great!","label":"positive"},
+    {"texto":"I feel indifferent.","label":"neutral"},
+    {"texto":"Terrible experience.","label":"negative"}
+  ]
+}`;
 
 app.post('/ingest', async (req, res) => {
     try {
@@ -49,6 +89,73 @@ app.post('/ingest', async (req, res) => {
             error: error.message
         });
     }
+});
+
+app.post('/predict', async (req, res) => {
+  try {
+    // Validar el payload
+    if (!req.body || !req.body.comments || !Array.isArray(req.body.comments)) {
+      return res.status(400).json({
+        error: 'Invalid payload. Must include "comments" array'
+      });
+    }
+
+    // Validar que cada comentario tenga el campo "texto"
+    const invalidComments = req.body.comments.some(comment => !comment.texto);
+    if (invalidComments) {
+      return res.status(400).json({
+        error: 'Each comment must have a "texto" field'
+      });
+    }
+
+    // Inicializar el modelo
+    const model = vertexAI.preview.getGenerativeModel({
+      model: MODEL_NAME
+    });
+
+    // Preparar el prompt con el input
+    const prompt = process.env.VERTEX_PROMPT || DEFAULT_PROMPT;
+    const input = JSON.stringify(req.body, null, 2);
+    
+    const result = await model.generateContent({
+      contents: [{ 
+        role: 'user', 
+        parts: [{ 
+          text: `${prompt}\n\nAnalyze this input and return ONLY a valid JSON response:\n${input}`
+        }]
+      }],
+      generationConfig: {
+        temperature: 0.1,  // Reducir la creatividad
+        topP: 0.8,
+        topK: 40,
+      }
+    });
+
+    const response = result.response;
+    const textContent = response.candidates[0].content.parts[0].text;
+
+    // Limpiar la respuesta de posibles markdown code blocks
+    const cleanedContent = textContent.replace(/```json\n?|\n?```/g, '').trim();
+
+    // Intentar parsear la respuesta como JSON
+    try {
+      const jsonResponse = JSON.parse(cleanedContent);
+      res.json(jsonResponse);
+    } catch (parseError) {
+      console.error('Error parsing AI response:', parseError);
+      res.status(500).json({
+        error: 'Error processing AI response',
+        details: textContent
+      });
+    }
+
+  } catch (error) {
+    console.error('Error in /predict endpoint:', error);
+    res.status(500).json({
+      error: 'Internal server error',
+      message: error.message
+    });
+  }
 });
 
 const PORT = process.env.PORT || 8080;
