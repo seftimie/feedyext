@@ -1,13 +1,13 @@
 # Feedy EXT - Brand Sentiment Analysis
 Google Chrome Built-in AI Challenge
  
-## [Team]() 
+## Team: 
 - [Silviu Daniel Eftimie](https://www.linkedin.com/in/eftimiesilviudaniel/)
 - [Nicoleta Radulescu](https://www.linkedin.com/in/cornelia-nicoleta-radulescu-6b3b7b16a/)
 - [Christian Stoyanov](https://www.linkedin.com/in/christian-stoyanov/)
 - [Helena Rodríguez Cagide](www.linkedin.com/in/helena-rodriguez-cagide)
 
-
+[![Feedy EXT](https://media.licdn.com/dms/image/v2/D4D22AQFQW-DzFNOhaw/feedshare-shrink_1280/feedshare-shrink_1280/0/1732838639206?e=1735776000&v=beta&t=Y-LqhS0FjG0r_2mTzUHquiHtkHnbM3yc-abStxKd0nk)](#)
 
 ## Slides: [presentation](https://docs.google.com/presentation/d/1FMSB0SC8emAEIaiQybZuFdGAlA1DWjexGg-lQh_6zu4/edit?usp=sharing)
  
@@ -63,10 +63,30 @@ Additionally, it includes a centralized dashboard that provides valuable insight
 Discover how this tool can transform the way your brand manages social media, ensuring a strong connection with your audience 24/7. 🚀  
 
 
-5. Feedy EXT in Action:
-  - necesitan un gcp proyect; (habilitar las apis de cloud run, cloud build, bigquery);
-  - setup env params: "GCP_PROJECT_ID" "BIGQUERY_DATASET_ID" "BIGQUERY_TABLE_ID";
-  - utiliza "GCP Cloud Shell" y haz un git clone del repo en gcp; (https://github.com/seftimie/feedyext)
-  - cd feedyext/ ejecutar bash setup.sh 
-  - Install extension;
-  - ir a linkedin, abrir un post y darle al analyze; actions;
+## 5. Feedy EXT in Action:
+
+## Prerequisites  
+
+1. **Create a Google Cloud Platform (GCP) project:**  
+   - Enable the following APIs:  
+     - **Cloud Run**  
+     - **Cloud Build**  
+     - **BigQuery**  
+
+2. **Set up environment parameters:**  
+   - Configure the following environment variables:  
+     - `GCP_PROJECT_ID`: Your GCP project ID.  
+     - `BIGQUERY_DATASET_ID`: Your BigQuery dataset ID.  
+     - `BIGQUERY_TABLE_ID`: Your BigQuery table ID.  
+
+---
+
+## Setup Steps  
+
+### 1. Use Google Cloud Shell  
+- Open **GCP Cloud Shell** from the Google Cloud Console.  
+
+### 2. Clone the Repository  
+- Run the following command to clone the repository:  
+  ```bash
+  git clone https://github.com/seftimie/feedyext
