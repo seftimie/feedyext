@@ -54,6 +54,8 @@ document.getElementById('getContent').addEventListener('click', async () => {
       title: tab.title
     };
   }
+
+  const baseIngestUrl = await import("./services/settings.js").then(module => module.getApiUrl());
   
   resetAnalysis();
   
@@ -374,7 +376,7 @@ document.getElementById('getContent').addEventListener('click', async () => {
         };
 
         try {
-          const response = await fetch('https://feedy-195788712267.europe-west4.run.app/ingest', {
+          const response = await fetch(`${baseIngestUrl}/ingest`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -532,7 +534,7 @@ document.getElementById('actionButton').addEventListener('click', async () => {
       const { totalButtons, message } = results[0].result;
       const commentsDiv = document.createElement('div');
       commentsDiv.innerHTML = `<p>Se procesaron ${totalButtons} botones. ${message}</p>`;
-      document.body.appendChild(commentsDiv);
+      document.getElementById('actionButton').insertAdjacentElement('afterend', commentsDiv);
     }
     
   } catch (err) {
@@ -614,3 +616,51 @@ async function analyzeWithCloud(comments) {
     return comments.map(() => 'neutral'); // Fallback to neutral for all comments in case of error
   }
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Get DOM elements
+  const tabs = document.querySelectorAll('.tab');
+  const tabContents = document.querySelectorAll('.tab-content');
+
+  // Tab switching functionality
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      // Remove active class from all tabs and contents
+      tabs.forEach(t => t.classList.remove('active'));
+      tabContents.forEach(content => content.classList.remove('active'));
+
+      // Add active class to clicked tab and corresponding content
+      tab.classList.add('active');
+      const tabId = tab.dataset.tab + 'Tab';
+      const tabContent = document.getElementById(tabId);
+      if (tabContent) {
+        tabContent.classList.add('active');
+        tabContent.style.display = 'block';
+      }
+
+      // Hide all other tab contents
+      tabContents.forEach(content => {
+        if (content.id !== tabId) {
+          content.style.display = 'none';
+        }
+      });
+      
+    });
+  });
+});
+
+
+document.addEventListener('DOMContentLoaded', async () => {
+  console.log('DOMContentLoaded');
+  
+  // Import modules
+  const [companiesModule, settingsModule] = await Promise.all([
+    import('./services/companies.js'),
+    import('./services/settings.js')
+  ]);
+
+  // Initialize settings
+  await settingsModule.initializeSettings();
+
+  // Rest of the company management code...
+});

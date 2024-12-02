@@ -8,7 +8,8 @@
     "scripting",
     "tabs",
     "ai",
-    "sidePanel"
+    "sidePanel",
+    "storage"
   ],
   "action": {
     "default_icon": "icons/icon.svg"
@@ -29,12 +30,16 @@
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
   },
-  "web_accessible_resources": [{
-    "resources": [
-      "chart.js",
-      "fonts/*",
-      "icons/*"
-    ],
-    "matches": ["<all_urls>"]
-  }]
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "chart.js",
+        "fonts/*",
+        "icons/*"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ]
 }
