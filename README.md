@@ -106,7 +106,7 @@ Discover how this tool can transform the way your brand manages social media, en
 
   ![image](images/extensions.png)
 
-   - Then click on **Load unpacked** and select the previously cloned repository.
+   - Then click on **Load unpacked** and select `feedyext/extension` folder.
  
      
 5.  **Analyze a LinkedIn Post**
