@@ -150,20 +150,12 @@ document.getElementById('getContent').addEventListener('click', async () => {
         await clickLoadMore();
         console.log('Carga y expansión de comentarios completada');
 
-        const commentSections = document.querySelectorAll('section.comments-comment-entity__content');
-        
-        if (commentSections.length === 0) {
-          console.log('No se encontraron secciones de comentarios');
-          return null;
-        }
+        // Usar el nuevo selector para obtener los comentarios
+        const comments = document.querySelectorAll('.comments-comment-item__main-content');
+        const commentsData = [];
 
-        const comments = Array.from(commentSections).map(section => {
-          // Buscar el contenedor principal del comentario que siempre está presente
-          const mainContent = section.querySelector('.comments-comment-item__main-content');
-          if (!mainContent) return null;
-
-          // Obtener todo el texto dentro del contenedor, ignorando la estructura específica
-          const text = mainContent.textContent.trim()
+        comments.forEach(comment => {
+          const text = comment.innerText.trim()
             // Limpiar el texto de espacios extras y saltos de línea
             .replace(/\s+/g, ' ')
             // Eliminar cualquier texto que sea un enlace a un perfil (que comience con /in/)
@@ -174,14 +166,16 @@ document.getElementById('getContent').addEventListener('click', async () => {
             .replace(/\s+/g, ' ')
             .trim();
 
-          return {
-            text: text,
-            sentiment: null
-          };
-        }).filter(comment => comment && comment.text); // Filtrar comentarios nulos o vacíos
+          if (text) {
+            commentsData.push({
+              text: text,
+              sentiment: null
+            });
+          }
+        });
 
-        console.log(`Se encontraron ${comments.length} comentarios`);
-        return comments;
+        console.log(`Se encontraron ${commentsData.length} comentarios`);
+        return commentsData;
       }
     });
     
