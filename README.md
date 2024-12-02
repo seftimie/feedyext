@@ -66,7 +66,7 @@ Discover how this tool can transform the way your brand manages social media, en
 
 --- 
 
-## 5. Feedy EXT in Action:
+## 4. Feedy EXT in Action:
 
 ### Prerequisites  
 
