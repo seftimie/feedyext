@@ -1,0 +1,15 @@
+Todos:
+
+- Chris: companies crud?
+- Chris: captar el title del post;
+- Chris: para los comments negativos sacar una sugerencia ???;
+- Chris: x (como red social)?
+
+- Helena: testing;
+- Helena: readme git;
+- Helena: script para montar todo en cloud?
+
+- Niko: Dashboard con Niko;
+- Niko: grabar el video;
+- Silviu: ppt las slide;
+- Silviu: pagina hackthon y submit all info;
