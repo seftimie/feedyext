@@ -104,7 +104,7 @@ Discover how this tool can transform the way your brand manages social media, en
    - Open Google Chrome and click on the puzzle icon (Extensions) in the top right corner of the window, after that, click on **Manage Extensions**
    - Once open, **enable Developer mode** in the top right.
 
-  ![image](https://github.com/user-attachments/assets/e08310a0-9eea-4ed8-b2c1-56c5d6314be1)
+  ![image](images/extensions.png)
 
    - Then click on **Load unpacked** and select the previously cloned repository.
  
