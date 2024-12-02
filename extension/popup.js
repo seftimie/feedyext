@@ -129,7 +129,9 @@ document.getElementById('getContent').addEventListener('click', async () => {
         }
         
         async function clickLoadMore() {
-          const loadMoreButton = document.querySelector('.comments-comments-list__load-more-comments-button--cr');
+          const loadMoreButton = Array.from(document.querySelectorAll('button')).find(
+            button => button.textContent.trim() === 'Load more comments'
+          );
           
           if (loadMoreButton) {
             console.log('Encontrado botón "Load more". Haciendo clic...');
@@ -155,10 +157,28 @@ document.getElementById('getContent').addEventListener('click', async () => {
           return null;
         }
 
-        const comments = Array.from(commentSections).map(section => ({
-          text: section.textContent.trim(),
-          sentiment: null
-        }));
+        const comments = Array.from(commentSections).map(section => {
+          // Buscar el contenedor principal del comentario que siempre está presente
+          const mainContent = section.querySelector('.comments-comment-item__main-content');
+          if (!mainContent) return null;
+
+          // Obtener todo el texto dentro del contenedor, ignorando la estructura específica
+          const text = mainContent.textContent.trim()
+            // Limpiar el texto de espacios extras y saltos de línea
+            .replace(/\s+/g, ' ')
+            // Eliminar cualquier texto que sea un enlace a un perfil (que comience con /in/)
+            .replace(/\/in\/[^\s]+/g, '')
+            // Eliminar URLs
+            .replace(/https?:\/\/[^\s]+/g, '')
+            // Limpiar espacios múltiples que pudieran quedar
+            .replace(/\s+/g, ' ')
+            .trim();
+
+          return {
+            text: text,
+            sentiment: null
+          };
+        }).filter(comment => comment && comment.text); // Filtrar comentarios nulos o vacíos
 
         console.log(`Se encontraron ${comments.length} comentarios`);
         return comments;
