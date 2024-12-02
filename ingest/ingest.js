@@ -59,6 +59,41 @@ const DEFAULT_PROMPT = process.env.PROMPT || `You are a JSON processor that perf
   ]
 }`;
 
+// Añadir el nuevo prompt por defecto para replies después de DEFAULT_PROMPT
+const DEFAULT_PROMPT_REPLY = `You are a helpful and harmless AI assistant designed to generate replies to comments on social media posts. You will receive a JSON object containing the context of a company, the text of a social media post, and an array of comments related to that post.  Your task is to analyze each comment and generate a concise and relevant reply in the same language as the comment.  You should consider the provided 'company_context' and 'post_text' when formulating your replies.
+
+**Input JSON Format:**
+
+{
+  "company_context": "string describing the company and its values",
+  "post_text": "string containing the text of the social media post",
+  "comments": [
+    {"texto": "comment text 1"},
+    {"texto": "comment text 2"},
+    {"texto": "comment text 3"}
+  ]
+}
+
+**Output JSON Format:**
+{
+  "comments": [
+    {
+      "texto": "comment text 1",
+      "reply": "reply to comment 1"
+    },
+    {
+      "texto": "comment text 2",
+      "reply": "reply to comment 2"
+    },
+    {
+      "texto": "comment text 3",
+      "reply": "reply to comment 3"
+    }
+  ]
+}
+
+Generate ONLY a valid JSON response following the output format.`;
+
 app.post('/ingest', async (req, res) => {
     try {
         // Obtiene los datos enviados en el cuerpo de la petición HTTP POST
@@ -151,6 +186,74 @@ app.post('/predict', async (req, res) => {
 
   } catch (error) {
     console.error('Error in /predict endpoint:', error);
+    res.status(500).json({
+      error: 'Internal server error',
+      message: error.message
+    });
+  }
+});
+
+app.post('/replies', async (req, res) => {
+  try {
+    // Validar el payload
+    if (!req.body || !req.body.comments || !Array.isArray(req.body.comments) || 
+        !req.body.company_context || !req.body.post_text) {
+      return res.status(400).json({
+        error: 'Invalid payload. Must include "company_context", "post_text" and "comments" array'
+      });
+    }
+
+    // Validar que cada comentario tenga el campo "texto"
+    const invalidComments = req.body.comments.some(comment => !comment.texto);
+    if (invalidComments) {
+      return res.status(400).json({
+        error: 'Each comment must have a "texto" field'
+      });
+    }
+
+    // Inicializar el modelo
+    const model = vertexAI.preview.getGenerativeModel({
+      model: MODEL_NAME
+    });
+
+    // Preparar el prompt con el input
+    const prompt = process.env.VERTEX_PROMPT_REPLY || DEFAULT_PROMPT_REPLY;
+    const input = JSON.stringify(req.body, null, 2);
+    
+    const result = await model.generateContent({
+      contents: [{ 
+        role: 'user', 
+        parts: [{ 
+          text: `${prompt}\n\nAnalyze this input and return ONLY a valid JSON response:\n${input}`
+        }]
+      }],
+      generationConfig: {
+        temperature: 0.7,  // Un poco más de creatividad para las respuestas
+        topP: 0.8,
+        topK: 40,
+      }
+    });
+
+    const response = result.response;
+    const textContent = response.candidates[0].content.parts[0].text;
+
+    // Limpiar la respuesta de posibles markdown code blocks
+    const cleanedContent = textContent.replace(/```json\n?|\n?```/g, '').trim();
+
+    // Intentar parsear la respuesta como JSON
+    try {
+      const jsonResponse = JSON.parse(cleanedContent);
+      res.json(jsonResponse);
+    } catch (parseError) {
+      console.error('Error parsing AI response:', parseError);
+      res.status(500).json({
+        error: 'Error processing AI response',
+        details: textContent
+      });
+    }
+
+  } catch (error) {
+    console.error('Error in /replies endpoint:', error);
     res.status(500).json({
       error: 'Internal server error',
       message: error.message
