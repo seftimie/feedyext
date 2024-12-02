@@ -1,5 +1,6 @@
 # Feedy EXT - Brand Sentiment Analysis
 Google Chrome Built-in AI Challenge
+
 ![image](images/team.jpg)
 
 
