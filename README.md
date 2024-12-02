@@ -80,7 +80,12 @@ Discover how this tool can transform the way your brand manages social media, en
    - Configure the following environment variables:  
      - `GCP_PROJECT_ID`: Your GCP project ID.  
      - `BIGQUERY_DATASET_ID`: Your BigQuery dataset ID.  
-     - `BIGQUERY_TABLE_ID`: Your BigQuery table ID.  
+     - `BIGQUERY_TABLE_ID`: Your BigQuery table ID.
+```bash
+export GCP_PROJECT_ID="your-gcp-project-id"
+export BIGQUERY_DATASET_ID="your-bigquery-dataset-id"
+export BIGQUERY_TABLE_ID="your-bigquery-table-id"
+```
 
 ---
 
