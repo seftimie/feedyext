@@ -304,9 +304,12 @@ document.getElementById('getContent').addEventListener('click', async () => {
                     'Content-Type': 'application/json',
                   },
                   body: JSON.stringify({
+                    company: company.name,
+                    url: currentTabInfo.url,
+                    plataforma: "linkedin",
                     company_context: company.context || `${company.name} is a company focused on providing excellent service to its customers.`,
                     post_text: text,
-                    comments: [{ texto: comment.text }]
+                    comments: [{ texto: comment.text, label: comment.sentiment }]
                   })
                 });
 
@@ -728,7 +731,9 @@ function addCommentToUI(comment) {
 
 async function analyzeWithCloud(comments) {
   try {
-    const response = await fetch('https://feedy-195788712267.europe-west4.run.app/predict', {
+    const settingsModule = await import("./services/settings.js");
+    const apiUrl = await settingsModule.getApiUrl();
+    const response = await fetch(`${apiUrl}/predict`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -751,6 +756,10 @@ async function analyzeWithCloud(comments) {
 }
 
 document.addEventListener('DOMContentLoaded', async function() {
+
+  const settingsModule = await import("./services/settings.js");
+  await settingsModule.initializeSettings();
+
   // Get DOM elements
   const tabs = document.querySelectorAll('.tab');
   const tabContents = document.querySelectorAll('.tab-content');

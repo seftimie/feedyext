@@ -18,7 +18,10 @@ app.use(cors({
 app.use(express.json());
 
 // Inicializar BigQuery
-const bigquery = new BigQuery();
+const bigquery = new BigQuery({
+  projectId: process.env.GCP_PROJECT_ID,
+  location: process.env.GCP_LOCATION || 'europe-west4'
+});
 
 // Configuración de Vertex AI
 const projectId = process.env.GCP_PROJECT_ID;
@@ -93,6 +96,13 @@ const DEFAULT_PROMPT_REPLY = `You are a helpful and harmless AI assistant design
 }
 
 Generate ONLY a valid JSON response following the output format.`;
+
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    timestamp: new Date().toISOString()
+  });
+});
 
 app.post('/ingest', async (req, res) => {
     try {
@@ -236,13 +246,31 @@ app.post('/replies', async (req, res) => {
 
     const response = result.response;
     const textContent = response.candidates[0].content.parts[0].text;
-
+    const dataset = bigquery.dataset(process.env.BIGQUERY_DATASET_ID);
+    const table = dataset.table(process.env.BIGQUERY_TABLE_ID);
+        
     // Limpiar la respuesta de posibles markdown code blocks
     const cleanedContent = textContent.replace(/```json\n?|\n?```/g, '').trim();
 
     // Intentar parsear la respuesta como JSON
     try {
       const jsonResponse = JSON.parse(cleanedContent);
+
+      const row = {
+        company: req.body.company,
+        text: req.body.post_text,
+        url: req.body.url || '',
+        plataforma: req.body.plataforma || '',
+        comments: req.body.comments.map(comment => ({
+          texto: comment.texto,
+          label: comment.label || '',
+          reply: jsonResponse.comments[0].reply
+        })),
+        timestamp: new Date().toISOString()
+      };
+
+      await table.insert([row]);
+      
       res.json(jsonResponse);
     } catch (parseError) {
       console.error('Error parsing AI response:', parseError);
@@ -259,6 +287,15 @@ app.post('/replies', async (req, res) => {
       message: error.message
     });
   }
+});
+
+// Default error handler
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err);
+  res.status(500).json({
+    error: 'Internal server error',
+    message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
+  });
 });
 
 const PORT = process.env.PORT || 8080;
