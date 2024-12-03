@@ -571,6 +571,41 @@
       text-align: center;
       margin-top: 8px;
     }
+
+    .answers-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .regenerate-btn {
+      background: none;
+      border: none;
+      padding: 4px;
+      color: #6b7280;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .regenerate-btn:hover {
+      color: #4b5563;
+      transform: rotate(45deg);
+    }
+
+    .regenerate-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .regenerate-btn svg {
+      width: 16px;
+      height: 16px;
+    }
   </style>
 </head>
 

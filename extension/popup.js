@@ -56,6 +56,12 @@ document.getElementById('getContent').addEventListener('click', async () => {
   }
 
   const baseIngestUrl = await import("./services/settings.js").then(module => module.getApiUrl());
+  const companiesModule = await import("./services/companies.js");
+
+  if (!await companiesModule.getSelectedCompany()) {
+    alert('Please select a company first');
+    return;
+  }
 
   resetAnalysis();
   
@@ -105,7 +111,16 @@ document.getElementById('getContent').addEventListener('click', async () => {
         }
       }
     });
-    
+    const basePostText = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      function: () => {
+        const container = document.getElementsByClassName("tvm-parent-container")[0];
+        return container ? container.innerText : '';
+      }
+    });
+
+    const text = basePostText[0].result;
+
     // Luego ejecutamos el script principal
     const results = await chrome.scripting.executeScript({
       target: { tabId: tab.id },
@@ -244,12 +259,12 @@ document.getElementById('getContent').addEventListener('click', async () => {
               <p class="comment-text">${comment.text}</p>
             </div>
             
-            <div class="comment-actions">
+            <div class="comment-actions ${sentiment ? "" : "hidden"}">
               <button class="generate-answers-btn" data-comment-id="${commentId}">
                 <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon" width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clip-rule="evenodd" />
                 </svg>
-                Generate Answers
+                Generate Answer
               </button>
               <div id="answers-${commentId}" class="answers-container hidden"></div>
             </div>
@@ -257,6 +272,7 @@ document.getElementById('getContent').addEventListener('click', async () => {
         `;
 
         // Add click handler for generate answers button
+
 
         const generateBtn = commentElement.querySelector('.generate-answers-btn');
         if (generateBtn) {
@@ -289,7 +305,7 @@ document.getElementById('getContent').addEventListener('click', async () => {
                   },
                   body: JSON.stringify({
                     company_context: company.context || `${company.name} is a company focused on providing excellent service to its customers.`,
-                    post_text: "LinkedIn post", // You might want to get this from somewhere
+                    post_text: text,
                     comments: [{ texto: comment.text }]
                   })
                 });
@@ -304,7 +320,14 @@ document.getElementById('getContent').addEventListener('click', async () => {
                 // Show answer
                 answersContainer.innerHTML = `
                   <div class="answers-box">
-                    <h4 class="answers-title">Suggested Response:</h4>
+                    <div class="answers-header">
+                      <h4 class="answers-title">Suggested Response:</h4>
+                      <button class="regenerate-btn" title="Generate new response">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                        </svg>
+                      </button>
+                    </div>
                     <div class="answers-list">
                       <div class="answer-item">
                         <p class="answer-text">${reply}</p>
@@ -348,14 +371,7 @@ document.getElementById('getContent').addEventListener('click', async () => {
                 `;
                 answersContainer.classList.remove('hidden');
               } finally {
-                // Reset button
-                generateBtn.disabled = false;
-                generateBtn.innerHTML = `
-                  <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon" width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clip-rule="evenodd" />
-                  </svg>
-                  Generate Answers
-                `;
+                generateBtn.classList.add('hidden');
               }
             }
           });
@@ -734,7 +750,7 @@ async function analyzeWithCloud(comments) {
   }
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
   // Get DOM elements
   const tabs = document.querySelectorAll('.tab');
   const tabContents = document.querySelectorAll('.tab-content');
@@ -744,7 +760,10 @@ document.addEventListener('DOMContentLoaded', function() {
     tab.addEventListener('click', () => {
       // Remove active class from all tabs and contents
       tabs.forEach(t => t.classList.remove('active'));
-      tabContents.forEach(content => content.classList.remove('active'));
+      tabContents.forEach(content => {
+        content.classList.remove('active');
+        content.style.display = 'none';
+      });
 
       // Add active class to clicked tab and corresponding content
       tab.classList.add('active');
@@ -754,16 +773,108 @@ document.addEventListener('DOMContentLoaded', function() {
         tabContent.classList.add('active');
         tabContent.style.display = 'block';
       }
-
-      // Hide all other tab contents
-      tabContents.forEach(content => {
-        if (content.id !== tabId) {
-          content.style.display = 'none';
-        }
-      });
       
+      // Re-render company list when switching to company tab
+      if (tab.dataset.tab === 'company') {
+        companiesModule.renderCompanyList();
+      }
     });
   });
+
+  const companiesModule = await import("./services/companies.js");
+
+  // Render initial company list
+  await companiesModule.renderCompanyList();
+
+  // Handle company form submission
+  const addCompanyForm = document.getElementById('addCompanyForm');
+  if (addCompanyForm) {
+    addCompanyForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const formData = new FormData(e.target);
+      const company = {
+        name: formData.get('companyName'),
+        linkedInUrl: formData.get('companyLinkedIn'),
+        logoUrl: formData.get('companyLogo'),
+        context: formData.get('companyContext')
+      };
+
+      try {
+        await companiesModule.addCompany(company);
+        await companiesModule.renderCompanyList();
+        
+        // Reset form
+        e.target.reset();
+      } catch (error) {
+        console.error('Error adding company:', error);
+      }
+    });
+  }
+
+  // Handle company selection
+  const companyList = document.querySelector('.company-list');
+  if (companyList) {
+    companyList.addEventListener('click', async (e) => {
+      const companyItem = e.target.closest('.company-item');
+      const deleteBtn = e.target.closest('.delete-company-btn');
+
+      if (deleteBtn) {
+        // Handle delete button click
+        e.stopPropagation();
+        const companyId = companyItem.dataset.id;
+        try {
+          await companiesModule.deleteCompany(companyId);
+          await companiesModule.renderCompanyList();
+        } catch (error) {
+          console.error('Error deleting company:', error);
+        }
+      } else if (companyItem) {
+        // Handle company selection
+        const companyId = companyItem.dataset.id;
+        try {
+          await companiesModule.setSelectedCompany(companyId);
+          await companiesModule.renderCompanyList();
+        } catch (error) {
+          console.error('Error selecting company:', error);
+        }
+      }
+    });
+  }
+
+  // Handle delete all companies
+  const deleteAllBtn = document.getElementById('deleteAllCompanies');
+  if (deleteAllBtn) {
+    deleteAllBtn.addEventListener('click', async () => {
+      if (confirm('Are you sure you want to delete all companies? This action cannot be undone.')) {
+        try {
+          await companiesModule.deleteAllCompanies();
+          await companiesModule.renderCompanyList();
+        } catch (error) {
+          console.error('Error deleting all companies:', error);
+        }
+      }
+    });
+  }
+
+  // Handle tooltip interactions for company context
+  const handleTooltips = () => {
+    const contextPreviews = document.querySelectorAll('.context-preview');
+    contextPreviews.forEach(preview => {
+      const tooltip = preview.querySelector('.context-tooltip');
+      if (tooltip) {
+        preview.addEventListener('mouseenter', () => {
+          tooltip.style.display = 'block';
+        });
+        preview.addEventListener('mouseleave', () => {
+          tooltip.style.display = 'none';
+        });
+      }
+    });
+  };
+
+  // Call handleTooltips initially and after any list updates
+  handleTooltips();
 });
 
 // Add this function after updateCommentUI
@@ -804,7 +915,14 @@ async function generateAnswersForComment(comment, basePostText, commentId, senti
     // Show answer
     answersContainer.innerHTML = `
       <div class="answers-box">
-        <h4 class="answers-title">Suggested Response:</h4>
+        <div class="answers-header">
+          <h4 class="answers-title">Suggested Response:</h4>
+          <button class="regenerate-btn" title="Generate new response">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+            </svg>
+          </button>
+        </div>
         <div class="answers-list">
           <div class="answer-item">
             <p class="answer-text">${reply}</p>
