@@ -25,7 +25,7 @@ const bigquery = new BigQuery({
 
 // Configuración de Vertex AI
 const projectId = process.env.GCP_PROJECT_ID;
-const location = process.env.GCP_LOCATION || 'europe-west4';
+const location = process.env.e || 'europe-west4';
 const vertexAI = new VertexAI({ project: projectId, location });
 
 // Configuración del modelo
@@ -63,7 +63,7 @@ const DEFAULT_PROMPT = process.env.PROMPT || `You are a JSON processor that perf
 }`;
 
 // Añadir el nuevo prompt por defecto para replies después de DEFAULT_PROMPT
-const DEFAULT_PROMPT_REPLY = `You are a helpful and harmless AI assistant designed to generate replies to comments on social media posts. You will receive a JSON object containing the context of a company, the text of a social media post, and an array of comments related to that post.  Your task is to analyze each comment and generate a concise and relevant reply in the same language as the comment.  You should consider the provided 'company_context' and 'post_text' when formulating your replies.
+const DEFAULT_PROMPT_REPLY = `You are a helpful and harmless AI assistant designed to generate replies to comments on social media posts. You will receive a JSON object containing the context of a company, the text of a social media post, and an array of comments related to that post.  Your task is to analyze each comment and generate a concise and relevant reply in the same language as the comment.  You should consider the provided 'company_context' and 'text' when formulating your replies.
 
 **Input JSON Format:**
 
@@ -121,6 +121,7 @@ app.post('/ingest', async (req, res) => {
 
         // Insertar los datos en BigQuery
         await table.insert([row]);
+        
 
         res.status(200).json({
             success: true,
@@ -207,9 +208,9 @@ app.post('/replies', async (req, res) => {
   try {
     // Validar el payload
     if (!req.body || !req.body.comments || !Array.isArray(req.body.comments) || 
-        !req.body.company_context || !req.body.post_text) {
+        !req.body.company_context || !req.body.text) {
       return res.status(400).json({
-        error: 'Invalid payload. Must include "company_context", "post_text" and "comments" array'
+        error: 'Invalid payload. Must include "company_context", "text" and "comments" array'
       });
     }
 
@@ -258,7 +259,7 @@ app.post('/replies', async (req, res) => {
 
       const row = {
         company: req.body.company,
-        text: req.body.post_text,
+        text: req.body.text,
         url: req.body.url || '',
         plataforma: req.body.plataforma || '',
         comments: req.body.comments.map(comment => ({
