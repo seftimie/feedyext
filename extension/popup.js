@@ -308,7 +308,7 @@ document.getElementById('getContent').addEventListener('click', async () => {
                     url: currentTabInfo.url,
                     plataforma: "linkedin",
                     company_context: company.context || `${company.name} is a company focused on providing excellent service to its customers.`,
-                    post_text: text,
+                    text: text,
                     comments: [{ texto: comment.text, label: comment.sentiment }]
                   })
                 });
@@ -500,13 +500,31 @@ document.getElementById('getContent').addEventListener('click', async () => {
         if (statusText) statusText.textContent = 'Analysis Complete';
         if (progress) progress.style.width = '100%';
 
-        // Preparar y enviar datos al endpoint
+        // Get selected company info
+        const companiesModule = await import("./services/companies.js");
+        const selectedCompanyId = await companiesModule.getSelectedCompany();
+        const companies = await companiesModule.getCompanies();
+        const selectedCompany = companies.find(c => c.id === selectedCompanyId);
+
+        if (!selectedCompany) {
+          throw new Error('No company selected');
+        }
+
+        // Antes de enviar el payload completo, intentemos limpiarlo
+        const cleanText = text => {
+          return text
+            .replace(/[\u0000-\u001F\u007F-\u009F]/g, '') // Remove control characters
+            .replace(/\n+/g, ' ') // Replace multiple newlines with space
+            .trim();
+        };
+
         const commentData = {
-          company: currentTabInfo.title.split('|')[0].trim(), // Assuming company name is before the | in the title
+          company: selectedCompany.name,
           url: currentTabInfo.url,
           plataforma: "linkedin",
+          text: cleanText(text),
           comments: comments.map(comment => ({
-            texto: comment.text,
+            texto: cleanText(comment.text),
             label: comment.sentiment
           }))
         };
@@ -521,7 +539,14 @@ document.getElementById('getContent').addEventListener('click', async () => {
           });
 
           if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            // Intentar obtener el mensaje de error del servidor
+            const errorText = await response.text();
+            console.error('Server response:', {
+              status: response.status,
+              statusText: response.statusText,
+              body: errorText
+            });
+            throw new Error(`HTTP error! status: ${response.status}. Server message: ${errorText}`);
           }
 
           console.log('Data successfully sent to endpoint');
@@ -529,6 +554,14 @@ document.getElementById('getContent').addEventListener('click', async () => {
         } catch (error) {
           console.error('Error sending data to endpoint:', error);
           if (statusText) statusText.textContent = 'Analysis Complete - Error Sending Data';
+          
+          // Mostrar el error en la UI para debugging
+          const errorDiv = document.createElement('div');
+          errorDiv.className = 'error-message';
+          errorDiv.style.color = 'red';
+          errorDiv.style.padding = '10px';
+          errorDiv.textContent = `Error: ${error.message}`;
+          document.getElementById('commentsContainer').prepend(errorDiv);
         }
 
       } catch (error) {
@@ -661,7 +694,7 @@ document.getElementById('actionButton').addEventListener('click', async () => {
         
         return {
           totalButtons: buttons.length,
-          message: 'Proceso completado'
+          message: 'Process completed'
         };
       }
     });
@@ -669,7 +702,7 @@ document.getElementById('actionButton').addEventListener('click', async () => {
     if (results && results[0].result) {
       const { totalButtons, message } = results[0].result;
       const commentsDiv = document.createElement('div');
-      commentsDiv.innerHTML = `<p>Se procesaron ${totalButtons} botones. ${message}</p>`;
+      commentsDiv.innerHTML = `<p>Successfully liked ${totalButtons} comments. ${message}</p>`;
       document.getElementById('actionButton').insertAdjacentElement('afterend', commentsDiv);
     }
     
@@ -909,7 +942,7 @@ async function generateAnswersForComment(comment, basePostText, commentId, senti
       },
       body: JSON.stringify({
         company_context: company.context || `${company.name} is a company focused on providing excellent service to its customers.`,
-        post_text: basePostText,
+        text: basePostText,
         comments: [{ texto: comment.text }]
       })
     });

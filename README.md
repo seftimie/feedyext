@@ -1,7 +1,9 @@
 # Feedy EXT - Brand Sentiment Analysis
-Google Chrome Built-in AI Challenge
+Google Chrome Built-in AI Challenge | [presentation](https://docs.google.com/presentation/d/1FMSB0SC8emAEIaiQybZuFdGAlA1DWjexGg-lQh_6zu4/edit?usp=sharing) | [video](https://youtu.be/71ApSLfxN_0)
 
-![image](images/team.jpg)
+
+
+[![image](images/team.jpg)](https://www.youtube.com/watch?v=71ApSLfxN_0)
 
 
 ## Team: 
@@ -11,7 +13,10 @@ Google Chrome Built-in AI Challenge
 - [Silviu Daniel Eftimie](https://www.linkedin.com/in/eftimiesilviudaniel/)
 
 
-## Slides: [presentation](https://docs.google.com/presentation/d/1FMSB0SC8emAEIaiQybZuFdGAlA1DWjexGg-lQh_6zu4/edit?usp=sharing)
+
+
+
+
  
 ## Pillars:
 
