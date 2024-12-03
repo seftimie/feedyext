@@ -56,12 +56,12 @@ document.getElementById('getContent').addEventListener('click', async () => {
   }
 
   const baseIngestUrl = await import("./services/settings.js").then(module => module.getApiUrl());
-  
+
   resetAnalysis();
   
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    
+  
     // Primero verificamos las capacidades del modelo
     await chrome.scripting.executeScript({
       target: { tabId: tab.id },
@@ -235,14 +235,131 @@ document.getElementById('getContent').addEventListener('click', async () => {
         commentElement.className = `comment-card ${sentimentValue}`;
 
         commentElement.innerHTML = `
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <strong>Comment ${index + 1}</strong>
-            ${sentiment ? 
-              `<span class="sentiment-badge ${sentimentValue}">${sentiment}</span>` : 
-              '<span class="sentiment-badge neutral">analyzing...</span>'}
+          <div class="comment-content">
+            <div class="comment-header">
+              <div class="comment-info">
+                <strong>Comment ${index + 1}</strong>
+                <span class="sentiment-badge ${sentimentValue}">${sentiment || 'analyzing...'}</span>
+              </div>
+              <p class="comment-text">${comment.text}</p>
+            </div>
+            
+            <div class="comment-actions">
+              <button class="generate-answers-btn" data-comment-id="${commentId}">
+                <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon" width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clip-rule="evenodd" />
+                </svg>
+                Generate Answers
+              </button>
+              <div id="answers-${commentId}" class="answers-container hidden"></div>
+            </div>
           </div>
-          <p style="margin: 10px 0;">${comment.text}</p>
         `;
+
+        // Add click handler for generate answers button
+
+        const generateBtn = commentElement.querySelector('.generate-answers-btn');
+        if (generateBtn) {
+          generateBtn.addEventListener('click', async () => {
+            const answersContainer = document.getElementById(`answers-${commentId}`);
+            if (answersContainer) {
+              // Show loading state
+              generateBtn.disabled = true;
+              generateBtn.innerHTML = `
+                <svg class="btn-icon spinner" width="16" height="16" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Generating...
+              `;
+              const companiesModule = await import("./services/companies.js");
+              try {
+                const selectedCompany = await companiesModule.getSelectedCompany();
+                const companies = await companiesModule.getCompanies();
+                const company = companies.find(c => c.id === selectedCompany);
+
+                if (!company) {
+                  throw new Error('Please select a company first');
+                }
+
+                const response = await fetch(`${baseIngestUrl}/replies`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    company_context: company.context || `${company.name} is a company focused on providing excellent service to its customers.`,
+                    post_text: "LinkedIn post", // You might want to get this from somewhere
+                    comments: [{ texto: comment.text }]
+                  })
+                });
+
+                if (!response.ok) {
+                  throw new Error('Failed to generate answers');
+                }
+
+                const data = await response.json();
+                const reply = data.comments[0].reply;
+                
+                // Show answer
+                answersContainer.innerHTML = `
+                  <div class="answers-box">
+                    <h4 class="answers-title">Suggested Response:</h4>
+                    <div class="answers-list">
+                      <div class="answer-item">
+                        <p class="answer-text">${reply}</p>
+                        <button class="copy-answer-btn" data-answer="${reply.replace(/"/g, '&quot;')}">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
+                            <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                `;
+
+                // Add copy functionality
+                answersContainer.querySelectorAll('.copy-answer-btn').forEach(btn => {
+                  btn.addEventListener('click', async () => {
+                    const answer = btn.dataset.answer;
+                    await navigator.clipboard.writeText(answer);
+                    
+                    // Show copied feedback
+                    const originalHTML = btn.innerHTML;
+                    btn.innerHTML = `
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 20 20" fill="currentColor" class="text-success">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                      </svg>
+                    `;
+                    setTimeout(() => {
+                      btn.innerHTML = originalHTML;
+                    }, 2000);
+                  });
+                });
+
+                answersContainer.classList.remove('hidden');
+              } catch (error) {
+                console.error('Error generating answers:', error);
+                answersContainer.innerHTML = `
+                  <div class="error-message">
+                    Failed to generate answers. Please try again.
+                  </div>
+                `;
+                answersContainer.classList.remove('hidden');
+              } finally {
+                // Reset button
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = `
+                  <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon" width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clip-rule="evenodd" />
+                  </svg>
+                  Generate Answers
+                `;
+              }
+            }
+          });
+        }
 
         if (sentiment) {
           updateMetrics(sentiment);
@@ -649,18 +766,150 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 
+// Add this function after updateCommentUI
+async function generateAnswersForComment(comment, basePostText, commentId, sentiment) {
+  const answersContainer = document.getElementById(`answers-${commentId}`);
+  if (!answersContainer) return;
+  const settingsModule = await import("./services/settings.js");
+  const companiesModule = await import("./services/companies.js");
+  try {
+    const apiUrl = await settingsModule.getApiUrl();
+    const selectedCompany = await companiesModule.getSelectedCompany();
+    const companies = await companiesModule.getCompanies();
+    const company = companies.find(c => c.id === selectedCompany);
 
-document.addEventListener('DOMContentLoaded', async () => {
-  console.log('DOMContentLoaded');
+    if (!company) {
+      throw new Error('Please select a company first');
+    }
+
+    const response = await fetch(`${apiUrl}/replies`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        company_context: company.context || `${company.name} is a company focused on providing excellent service to its customers.`,
+        post_text: basePostText,
+        comments: [{ texto: comment.text }]
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to generate answers');
+    }
+
+    const data = await response.json();
+    const reply = data.comments[0].reply;
+    
+    // Show answer
+    answersContainer.innerHTML = `
+      <div class="answers-box">
+        <h4 class="answers-title">Suggested Response:</h4>
+        <div class="answers-list">
+          <div class="answer-item">
+            <p class="answer-text">${reply}</p>
+            <button class="copy-answer-btn" data-answer="${reply.replace(/"/g, '&quot;')}">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
+                <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Add copy functionality
+    answersContainer.querySelectorAll('.copy-answer-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const answer = btn.dataset.answer;
+        await navigator.clipboard.writeText(answer);
+        
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 20 20" fill="currentColor" class="text-success">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+          </svg>
+        `;
+        setTimeout(() => {
+          btn.innerHTML = originalHTML;
+        }, 2000);
+      });
+    });
+
+    answersContainer.classList.remove('hidden');
+    return true;
+  } catch (error) {
+    console.error('Error generating answers:', error);
+    answersContainer.innerHTML = `
+      <div class="error-message">
+        ${error.message === 'Please select a company first' 
+          ? 'Please select a company before generating answers.' 
+          : 'Failed to generate answers. Please try again.'}
+      </div>
+    `;
+    answersContainer.classList.remove('hidden');
+    return false;
+  }
+}
+
+// Add this in your DOMContentLoaded event listener
+document.getElementById('generateAllAnswers')?.addEventListener('click', async () => {
+  const generateAllBtn = document.getElementById('generateAllAnswers');
+  const comments = document.querySelectorAll('.comment-card');
   
-  // Import modules
-  const [companiesModule, settingsModule] = await Promise.all([
-    import('./services/companies.js'),
-    import('./services/settings.js')
-  ]);
+  if (!comments.length) return;
 
-  // Initialize settings
-  await settingsModule.initializeSettings();
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
-  // Rest of the company management code...
+    const basePostText = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      function: () => {
+        const container = document.getElementsByClassName("tvm-parent-container")[0];
+        return container ? container.innerText : '';
+      }
+    });
+
+  const text = basePostText[0].result;
+
+  generateAllBtn.disabled = true;
+  const originalBtnText = generateAllBtn.innerHTML;
+  let progress = 0;
+
+  // Add progress text
+  const progressText = document.createElement('div');
+  progressText.className = 'generate-all-progress';
+  generateAllBtn.parentNode.appendChild(progressText);
+
+  generateAllBtn.innerHTML = `
+    <svg class="btn-icon spinner" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    </svg>
+    Generating...
+  `;
+
+  try {
+    for (const comment of comments) {
+      const commentId = comment.id;
+      const sentiment = comment.getAttribute('data-sentiment');
+      const commentText = comment.querySelector('.comment-text')?.textContent;
+
+      if (commentText) {
+        await generateAnswersForComment({ text: commentText}, text, commentId, sentiment);
+        progress++;
+        progressText.textContent = `Generated ${progress} of ${comments.length} responses`;
+      }
+    }
+  } finally {
+    generateAllBtn.disabled = false;
+    generateAllBtn.innerHTML = originalBtnText;
+    
+    // Remove progress text after a delay
+    setTimeout(() => {
+      progressText.remove();
+    }, 3000);
+  }
 });
+
+

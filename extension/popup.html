@@ -374,6 +374,203 @@
     .tab-content.active {
       display: block;
     }
+
+    .generate-answers-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #2563eb;
+      background: none;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .generate-answers-btn:hover {
+      color: #1d4ed8;
+      background: #eff6ff;
+    }
+
+    .generate-answers-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .answers-container {
+      margin-top: 12px;
+    }
+
+    .answers-box {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .answers-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: #111827;
+      margin-bottom: 8px;
+    }
+
+    .answer-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 8px;
+      border-radius: 6px;
+      transition: background 0.2s ease;
+    }
+
+    .answer-item:hover {
+      background: white;
+    }
+
+    .answer-text {
+      flex: 1;
+      font-size: 14px;
+      color: #374151;
+      line-height: 1.5;
+    }
+
+    .copy-answer-btn {
+      opacity: 0;
+      padding: 4px;
+      background: none;
+      border: none;
+      color: #9ca3af;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .answer-item:hover .copy-answer-btn {
+      opacity: 1;
+    }
+
+    .copy-answer-btn:hover {
+      color: #4b5563;
+    }
+
+    .error-message {
+      background: #fef2f2;
+      border: 1px solid #fee2e2;
+      border-radius: 6px;
+      padding: 12px;
+      color: #dc2626;
+      font-size: 14px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .spinner {
+      animation: spin 1s linear infinite;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .comment-content {
+      padding: 16px;
+    }
+
+    .comment-header {
+      margin-bottom: 16px;
+    }
+
+    .comment-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .comment-text {
+      font-size: 14px;
+      color: #374151;
+      line-height: 1.5;
+      margin: 8px 0;
+    }
+
+    .comment-actions {
+      margin-top: 12px;
+    }
+
+    .btn-icon {
+      width: 16px;
+      height: 16px;
+    }
+
+    .text-success {
+      color: #059669;
+    }
+
+    .answers-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .generate-all-container {
+      padding: 16px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .generate-all-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      color: white;
+      background: #2563eb;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .generate-all-btn:hover {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .generate-all-btn:active {
+      transform: translateY(0);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .generate-all-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .generate-all-btn .btn-icon {
+      width: 16px;
+      height: 16px;
+    }
+
+    .generate-all-progress {
+      font-size: 12px;
+      color: #6b7280;
+      text-align: center;
+      margin-top: 8px;
+    }
   </style>
 </head>
 
@@ -449,6 +646,17 @@
         <button id="filter-positive" class="filter-btn">Positive</button>
         <button id="filter-neutral" class="filter-btn">Neutral</button>
         <button id="filter-negative" class="filter-btn">Negative</button>
+      </div>
+
+      <div class="generate-all-container">
+        <button id="generateAllAnswers" class="generate-all-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd"
+              d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"
+              clip-rule="evenodd" />
+          </svg>
+          Generate All Answers
+        </button>
       </div>
 
       <div class="comments-container" id="commentsContainer"></div>
