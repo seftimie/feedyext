@@ -68,15 +68,22 @@ Discover how this tool can transform the way your brand manages social media, en
 
 ## 4. Feedy EXT in Action:
 
-### Prerequisites  
+### Prerequisites & Setup Steps:
 
-1. **Create a Google Cloud Platform (GCP) project:**  
-   - Enable the following APIs:  
+1. **Create a Google Cloud Platform (GCP) project:**
+
+2. **Use Google Cloud Shell**: Open GCP Cloud Shell from the Google Cloud Console.
+   
+3. **Enable the following APIs**:  
      - **Cloud Run**  
      - **Cloud Build**  
      - **BigQuery**  
-
-2. **Set up environment parameters:**  
+``` bash 
+gcloud services enable cloudbuild.googleapis.com
+gcloud services enable run.googleapis.com
+gcloud services enable bigquery.googleapis.com
+```
+4. **Set up environment parameters:**  
    - Configure the following environment variables:  
      - `GCP_PROJECT_ID`: Your GCP project ID.  
      - `BIGQUERY_DATASET_ID`: Your BigQuery dataset ID.  
@@ -87,25 +94,18 @@ export BIGQUERY_DATASET_ID="your-bigquery-dataset-id"
 export BIGQUERY_TABLE_ID="your-bigquery-table-id"
 ```
 
----
-
-### Setup Steps  
-
-1. **Use Google Cloud Shell**
-   - Open **GCP Cloud Shell** from the Google Cloud Console.  
-
-2. **Clone the Repository**
+5. **Clone the Repository**
    - Run the following command to clone the repository: 
     `git clone https://github.com/seftimie/feedyext`
 
-3. **Navigate to the Project Directory and Run Setup**
+6. **Navigate to the Project Directory and Run Setup**
    - Move into the cloned project directory:
     `cd feedyext/`
 
    - Execute the setup script by running:
     `bash setup.sh`
 
-4. **Install the Chrome Extension**
+7. **Install the Chrome Extension**
    - Open Google Chrome and click on the puzzle icon (Extensions) in the top right corner of the window, after that, click on **Manage Extensions**
    - Once open, **enable Developer mode** in the top right.
 
@@ -114,7 +114,7 @@ export BIGQUERY_TABLE_ID="your-bigquery-table-id"
    - Then click on **Load unpacked** and select `feedyext/extension` folder.
  
      
-5.  **Analyze a LinkedIn Post**
+8.  **Analyze a LinkedIn Post**
     - Go to [LinkedIn](https://www.linkedin.com/), open a post, and click the **"Analyze"** button.
     - The extension will analyze the post's comments, providing insights into sentiment and engagement.
     - In the **Actions** section, you can automatically **like** positive comments to help boost engagement.
