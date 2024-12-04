@@ -7,10 +7,11 @@ Google Chrome Built-in AI Challenge | [presentation](https://docs.google.com/pre
 
 
 ## Team: 
-- [Helena Rodríguez Cagide](www.linkedin.com/in/helena-rodriguez-cagide)
+- [Helena Rodríguez Cagide](https://www.linkedin.com/in/helena-rodriguez-cagide)
 - [Nicoleta Radulescu](https://www.linkedin.com/in/cornelia-nicoleta-radulescu-6b3b7b16a/)
 - [Christian Stoyanov](https://www.linkedin.com/in/christian-stoyanov/)
 - [Silviu Daniel Eftimie](https://www.linkedin.com/in/eftimiesilviudaniel/)
+
 
 
 
